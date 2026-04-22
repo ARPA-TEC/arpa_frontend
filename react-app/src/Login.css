@@ -1,0 +1,196 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@300;400&family=DM+Sans:wght@300;400;500&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+.lf-wrap {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #F1EFE8;
+    font-family: 'DM Sans', sans-serif;
+    padding: 2rem 1rem;
+}
+
+.lf-card {
+    background: #ffffff;
+    border: 0.5px solid rgba(0,0,0,0.1);
+    border-radius: 16px;
+    padding: 2.75rem 2.25rem;
+    width: 100%;
+    max-width: 380px;
+    animation: lf-rise 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.lf-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 2rem;
+}
+
+.lf-mark {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #2C2C2A;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.lf-brand-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #2C2C2A;
+    letter-spacing: 0.01em;
+}
+
+.lf-heading {
+    font-family: 'Fraunces', serif;
+    font-size: 24px;
+    font-weight: 300;
+    color: #2C2C2A;
+    line-height: 1.2;
+    margin-bottom: 0.3rem;
+}
+
+.lf-sub {
+    font-size: 13px;
+    color: #888780;
+    font-weight: 300;
+    margin-bottom: 2rem;
+}
+
+.lf-field {
+    margin-bottom: 1rem;
+}
+
+.lf-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    color: #888780;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+
+.lf-input-wrap {
+    position: relative;
+}
+
+.lf-input {
+    width: 100%;
+    height: 42px;
+    padding: 0 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    background: #F7F6F2;
+    border: 0.5px solid rgba(0,0,0,0.12);
+    border-radius: 8px;
+    color: #2C2C2A;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.lf-input:focus {
+    border-color: rgba(0,0,0,0.35);
+    box-shadow: 0 0 0 3px rgba(44,44,42,0.06);
+    background: #ffffff;
+}
+
+.lf-input.has-toggle {
+    padding-right: 40px;
+}
+
+.lf-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    color: #B4B2A9;
+    transition: color 0.15s;
+}
+
+.lf-toggle:hover { color: #2C2C2A; }
+
+.lf-error {
+    font-size: 12px;
+    color: #993C1D;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    animation: lf-shake 0.3s ease;
+}
+
+@keyframes lf-shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+}
+
+.lf-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0.5rem 0 1.5rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+.lf-checkbox {
+    width: 15px;
+    height: 15px;
+    accent-color: #2C2C2A;
+    cursor: pointer;
+}
+
+.lf-remember {
+    font-size: 13px;
+    color: #5F5E5A;
+}
+
+.lf-btn {
+    width: 100%;
+    height: 42px;
+    background: #2C2C2A;
+    color: #F1EFE8;
+    border: none;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    transition: opacity 0.15s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.lf-btn:hover:not(:disabled) { opacity: 0.82; }
+.lf-btn:active:not(:disabled) { transform: scale(0.99); }
+.lf-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.lf-spinner {
+    width: 15px;
+    height: 15px;
+    border: 2px solid rgba(241,239,232,0.3);
+    border-top-color: #F1EFE8;
+    border-radius: 50%;
+    animation: lf-spin 0.7s linear infinite;
+}
+
+@keyframes lf-spin {
+    to { transform: rotate(360deg); }
+}
