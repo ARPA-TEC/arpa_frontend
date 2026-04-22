@@ -1,13 +1,15 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import './Login.css'
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 
-function Login_estudiante({ navegarA }) {
+function Login_estudiante() {
   const [nombre, setNombre] = useState('')
   const [apellido, setApellido] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -57,7 +59,7 @@ function Login_estudiante({ navegarA }) {
 
       localStorage.setItem('token', token)
       localStorage.setItem('user', JSON.stringify(userData))
-      navegarA('vista')
+      navigate('/vista')
 
     } catch (err) {
       setError('Error de conexión. Intenta de nuevo.')

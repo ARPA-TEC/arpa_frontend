@@ -1,12 +1,15 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import './Login.css'
 
-export default function LoginForm({ onLogin }) {
+export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("ADMINISTRADOR");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,14 +21,36 @@ export default function LoginForm({ onLogin }) {
     }
 
     setLoading(true);
-    // Simulación de llamada a API
-    await new Promise((r) => setTimeout(r, 1200));
-    setLoading(false);
 
-    if (onLogin) {
-      onLogin({ email, password });
-    } else {
-      setError("Credenciales incorrectas. Intenta de nuevo.");
+    try {
+      const endpoint = role === "ADMINISTRADOR" ? "admin" : "tutor";
+      const res = await fetch(`http://localhost:3000/api/auth/login/${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message || "Credenciales incorrectas.");
+        return;
+      }
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      // Redirige según rol
+      if (data.user.role === "ADMINISTRADOR") {
+        navigate("/dashboard/admin");
+      } else {
+        navigate("/dashboard/tutor");
+      }
+
+    } catch (err) {
+      setError("No se pudo conectar con el servidor.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -33,7 +58,6 @@ export default function LoginForm({ onLogin }) {
     <>
       <div className="lf-wrap">
         <div className="lf-card">
-
           <div className="lf-brand">
             <div className="lf-mark">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -50,7 +74,6 @@ export default function LoginForm({ onLogin }) {
           <p className="lf-sub">Ingresa tus credenciales para continuar</p>
 
           <form onSubmit={handleSubmit} noValidate>
-
             <div className="lf-field">
               <label className="lf-label" htmlFor="lf-email">Correo electrónico</label>
               <input
@@ -98,6 +121,19 @@ export default function LoginForm({ onLogin }) {
               </div>
             </div>
 
+            <div className="lf-field">
+              <label className="lf-label" htmlFor="lf-role">Rol</label>
+              <select
+                id="lf-role"
+                className="lf-input"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+              >
+                <option value="ADMINISTRADOR">Administrador</option>
+                <option value="TUTOR">Tutor</option>
+              </select>
+            </div>
+
             {error && (
               <p className="lf-error">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -107,6 +143,10 @@ export default function LoginForm({ onLogin }) {
               </p>
             )}
 
+            <a href="/Login_estudiante" className="lf-sub">
+              Iniciar sesión como estudiante
+            </a>
+
             <label className="lf-row">
               <input type="checkbox" className="lf-checkbox" />
               <span className="lf-remember">Recordarme</span>
@@ -115,7 +155,6 @@ export default function LoginForm({ onLogin }) {
             <button className="lf-btn" type="submit" disabled={loading}>
               {loading ? <><div className="lf-spinner" /> Verificando...</> : "Iniciar sesión"}
             </button>
-
           </form>
         </div>
       </div>
