@@ -1,0 +1,670 @@
+/* Outfit: sans-serif geométrica de peso visual fuerte, espaciado amplio */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DashboardAdmin.css
+   Convenciones de nomenclatura:
+     admin-*       → layout estructural (header, nav, content)
+     card          → contenedor de tarjeta — compartido entre Student y Tutor
+     tutor-*       → elementos exclusivos de TutorCard
+     skill-*       → pills de habilidades
+     btn-*         → botones de acción
+     log-*         → entradas de registro de horas
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Tokens de diseño ───────────────────────────────────────────────────────
+   Centraliza todos los colores del sistema. Cambiar aquí afecta todo el dashboard.
+   ─────────────────────────────────────────────────────────────────────────── */
+:root {
+  /* Fondos */
+  --color-bg:            #141414;
+  --color-surface:       #1c1c1c;
+  --color-surface-alt:   #242424;
+  --color-border:        #ffffff;
+
+  /* Tipografía */
+  --color-text:          #f1efe8;
+  --color-text-muted:    #999999;
+
+  /* Acento principal (aqua) */
+  --color-aqua-light:    #68D8D6;
+  --color-aqua-dark:     #126476;
+
+  /* Botón primario (Añadir estudiante / Añadir tutor) */
+  --color-btn-bg:        #058C42;
+  --color-btn-text:      #033c18;
+
+  /* Skills — rojo */
+  --color-skill-red-bg:  #9E2A2B;
+  --color-skill-red-fg:  #540B0E;
+
+  /* Skills — verde */
+  --color-skill-green-bg: #ADC178;
+  --color-skill-green-fg: #4F772D;
+
+  /* Skills — amarillo */
+  --color-skill-amber-bg: #E9C46A;
+  --color-skill-amber-fg: #E09F3E;
+
+  /* Logout */
+  --color-logout:        #e53935;
+
+  /* Tipografía — tamaños */
+  --font-xs:   15px;
+  --font-sm:   17px;
+  --font-base: 20px;
+  --font-lg:   24px;
+  --font-xl:   27px;
+
+  /* Espaciado de cards */
+  --card-padding:        1.4rem 1.6rem;
+  --card-radius:         14px;
+  --card-border-width:   2.5px;
+  --card-gap:            16px;
+}
+
+/* ─── Base ───────────────────────────────────────────────────────────────────*/
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.admin-root {
+  min-height: 100vh;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: 'Outfit', 'Segoe UI', system-ui, sans-serif;
+  font-size: var(--font-base);
+}
+
+/* ─── Header ─────────────────────────────────────────────────────────────────*/
+.admin-header {
+  background: var(--color-surface);
+  border-bottom: 1px solid #2a2a2a;
+  padding: 0 2rem;
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.admin-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.admin-logo {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  border-radius: 7px;
+}
+
+.admin-brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin-brand-name {
+  font-size: var(--font-xl);
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: 2px;
+  line-height: 1;
+}
+
+.admin-brand-sub {
+  font-size: var(--font-xs);
+  color: var(--color-text-muted);
+}
+
+.admin-header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.admin-welcome {
+  font-size: var(--font-lg);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+/* Botón de cerrar sesión — icono rojo */
+.admin-logout-btn {
+  background: transparent;
+  border: 1.5px solid #3a1a1a;
+  color: var(--color-logout);
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.admin-logout-btn:hover {
+  background: #2a1010;
+  border-color: var(--color-logout);
+}
+
+/* ─── Nav ────────────────────────────────────────────────────────────────────*/
+.admin-nav {
+  background: var(--color-surface);
+  border-bottom: 1px solid #2a2a2a;
+  padding: 0 2rem;
+  display: flex;
+  padding: 10px 2rem;
+}
+
+.admin-nav-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--color-text-muted);
+  height: 48px;
+  padding: 0 1.8rem;
+  font-size: var(--font-xl);
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.admin-nav-btn:hover {
+  color: var(--color-text);
+}
+
+.admin-nav-btn.active {
+  color: var(--color-aqua-light);
+  border-bottom-color: var(--color-aqua-light);
+}
+
+/* ─── Contenido principal ────────────────────────────────────────────────────*/
+.admin-content {
+  width: 100%;
+  padding: 1.8rem 2rem 3rem;
+}
+
+/* ─── Toolbar (buscador + botón añadir) ──────────────────────────────────────*/
+.admin-toolbar {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 1.8rem;
+  align-items: center;
+}
+
+.admin-search {
+  flex: 1;
+  height: 44px;
+  background: var(--color-surface);
+  border: 1.5px solid #2e2e2e;
+  border-radius: 9px;
+  padding: 0 16px;
+  color: var(--color-text);
+  font-size: var(--font-base);
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.admin-search::placeholder {
+  color: var(--color-text-muted);
+}
+
+.admin-search:focus {
+  border-color: var(--color-aqua-light);
+}
+
+/* Botón primario — Añadir estudiante / Añadir tutor */
+.btn-add-primary {
+  height: 44px;
+  padding: 0 22px;
+  background: var(--color-btn-bg);
+  border: none;
+  border-radius: 9px;
+  color: var(--color-btn-text);
+  font-size: var(--font-base);
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: filter 0.2s;
+}
+
+.btn-add-primary:hover {
+  filter: brightness(1.12);
+}
+
+/* ─── Lista de cards ─────────────────────────────────────────────────────────*/
+.cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--card-gap);
+}
+
+/* ─── Card — base compartida ─────────────────────────────────────────────────
+   Todas las cards (estudiante y tutor) heredan estos estilos.
+   ─────────────────────────────────────────────────────────────────────────── */
+.card {
+  width: 100%;
+  background: var(--color-surface);
+  border: var(--card-border-width) solid var(--color-border);
+  border-radius: var(--card-radius);
+  padding: var(--card-padding);
+}
+
+/* ─── Card de estudiante ─────────────────────────────────────────────────────*/
+.card-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.card-name-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Tipografía: nombre de estudiante */
+.card-student-name {
+  font-size: var(--font-xl);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+/* Badge de nivel (ej. B2) — fondo aqua claro, letra aqua oscuro */
+.level-badge {
+  background: var(--color-aqua-light);
+  color: var(--color-aqua-dark);
+  font-size: var(--font-sm);
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+
+/* Tag de tutor — fondo blanco, letra negra */
+.tutor-tag {
+  background: #ffffff;
+  color: #111111;
+  font-size: var(--font-sm);
+  font-weight: 600;
+  padding: 4px 14px;
+  border-radius: 7px;
+}
+
+/* ─── Skills pills ───────────────────────────────────────────────────────────*/
+.skills-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Base compartida de todas las pills */
+.skill-pill {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border-radius: 7px;
+  overflow: hidden;
+  font-weight: 700;
+}
+
+.skill-name {
+  padding: 6px 14px;
+  font-size: var(--font-base);
+}
+
+/* Score con fondo más oscuro para contraste */
+.skill-score {
+  padding: 6px 12px;
+  font-size: var(--font-base);
+}
+
+/* Rojo */
+.skill-red .skill-name  { background: var(--color-skill-red-bg);   color: #fff; }
+.skill-red .skill-score { background: var(--color-skill-red-fg);   color: #fff; }
+
+/* Verde */
+.skill-green .skill-name  { background: var(--color-skill-green-bg); color: #fff; }
+.skill-green .skill-score { background: var(--color-skill-green-fg); color: #fff; }
+
+/* Amarillo */
+.skill-amber .skill-name  { background: var(--color-skill-amber-bg); color: #333; }
+.skill-amber .skill-score { background: var(--color-skill-amber-fg); color: #fff; }
+
+/* ─── Gráfica de barras ───────────────────────────────────────────────────────*/
+.chart-container {
+  background: var(--color-surface);
+  border: var(--card-border-width) solid var(--color-border);
+  border-radius: var(--card-radius);
+  padding: 1.4rem;
+  margin-bottom: 1.8rem;
+  max-height: 280px;
+}
+
+/* ─── Tutor card ─────────────────────────────────────────────────────────────*/
+/* Override: tutor card no usa padding base — el header y expand lo manejan */
+.tutor-card {
+  padding: 0;
+}
+
+.tutor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--card-padding);
+  cursor: pointer;
+  user-select: none;
+}
+
+.tutor-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Tipografía: nombre de tutor */
+.tutor-name {
+  font-size: var(--font-xl);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+/* Matrícula — fondo blanco, letra aqua oscuro */
+.matricula-badge {
+  background: #ffffff;
+  color: var(--color-aqua-dark);
+  font-size: var(--font-sm);
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+
+.tutor-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Horas registradas — fondo aqua claro, letra aqua oscuro */
+.hrs-badge {
+  background: var(--color-aqua-light);
+  color: var(--color-aqua-dark);
+  font-size: var(--font-base);
+  font-weight: 700;
+  padding: 5px 16px;
+  border-radius: 8px;
+}
+
+/* Botón +/- expandir */
+.expand-toggle {
+  background: transparent;
+  border: 1.5px solid #3a3a3a;
+  color: var(--color-text-muted);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 22px;
+  font-weight: 300;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.expand-toggle:hover {
+  border-color: var(--color-aqua-light);
+  color: var(--color-aqua-light);
+}
+
+/* ─── Expand body (formulario + logs) ────────────────────────────────────────*/
+.tutor-expand {
+  border-top: 1.5px solid #2e2e2e;
+  padding: 1.2rem 1.6rem 1.4rem;
+}
+
+/* Subtítulo de sección */
+.expand-label {
+  font-size: var(--font-sm);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 14px;
+}
+
+/* Grid 2 columnas para el formulario */
+.add-hours-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding-bottom: 1.2rem;
+  border-bottom: 1px solid #2e2e2e;
+  margin-bottom: 1.2rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* Etiquetas del formulario */
+.form-field label {
+  font-size: var(--font-sm);
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+/* Inputs del formulario */
+.form-field input {
+  background: var(--color-surface-alt);
+  border: 1.5px solid #333;
+  border-radius: 7px;
+  padding: 8px 12px;
+  color: var(--color-text);
+  font-size: var(--font-sm);
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+}
+
+.form-field input:focus {
+  border-color: var(--color-aqua-light);
+}
+
+/* Botón Añadir horas — ocupa todo el ancho del grid */
+.btn-add-hours {
+  grid-column: 1 / -1;
+  height: 40px;
+  background: var(--color-btn-bg);
+  border: none;
+  border-radius: 8px;
+  color: var(--color-btn-text);
+  font-size: var(--font-sm);
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: filter 0.2s;
+}
+
+.btn-add-hours:hover {
+  filter: brightness(1.12);
+}
+
+/* ─── Log entries ────────────────────────────────────────────────────────────*/
+.logs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.log-entry {
+  background: #eee5e9;
+  border-radius: 9px;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+}
+
+/* Tipografía: nombre de referencia en log */
+.log-ref {
+  font-size: var(--font-base);
+  font-weight: 600;
+  color: black;
+  margin-bottom: 7px;
+}
+
+/* Metadata del log: fecha y horario */
+.log-meta {
+  font-size: var(--font-sm);
+  color: var(--color-text-muted);
+  background: #525252;
+  color: black;
+  font-size: var(--font-xs);
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+
+/* Badge de horas en log — mismo estilo que hrs-badge de la card */
+.log-hrs-badge {
+  background: var(--color-aqua-light);
+  color: var(--color-aqua-dark);
+  font-size: var(--font-base);
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: 7px;
+  white-space: nowrap;
+}
+
+/* ─── Modal ──────────────────────────────────────────────────────────────────*/
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  backdrop-filter: blur(2px);
+}
+
+.modal-box {
+  background: var(--color-surface);
+  border: var(--card-border-width) solid var(--color-border);
+  border-radius: var(--card-radius);
+  width: 100%;
+  max-width: 460px;
+  padding: 1.6rem;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.4rem;
+}
+
+.modal-title {
+  font-size: var(--font-xl);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.modal-close {
+  background: transparent;
+  border: 1.5px solid #3a3a3a;
+  color: var(--color-text-muted);
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.modal-close:hover {
+  border-color: var(--color-logout);
+  color: var(--color-logout);
+}
+
+/* Reutiliza .form-field del CSS existente — solo necesita el grid */
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 1.6rem;
+}
+
+/* Select — mismo estilo visual que los inputs */
+.modal-form select {
+  background: var(--color-surface-alt);
+  border: 1.5px solid #333;
+  border-radius: 7px;
+  padding: 8px 12px;
+  color: var(--color-text);
+  font-size: var(--font-sm);
+  font-family: inherit;
+  outline: none;
+  width: 100%;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.modal-form select:focus {
+  border-color: var(--color-aqua-light);
+}
+
+/* Opción vacía (placeholder) en color muted */
+.modal-form select option[value=""] {
+  color: var(--color-text-muted);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn-modal-cancel {
+  height: 40px;
+  padding: 0 20px;
+  background: transparent;
+  border: 1.5px solid #3a3a3a;
+  border-radius: 8px;
+  color: var(--color-text-muted);
+  font-size: var(--font-sm);
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.btn-modal-cancel:hover {
+  border-color: var(--color-text-muted);
+  color: var(--color-text);
+}
