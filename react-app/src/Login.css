@@ -1,196 +1,261 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@300;400&family=DM+Sans:wght@300;400;500&display=swap');
+/* Outfit: misma fuente que el dashboard */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* ─── Tokens ─────────────────────────────────────────────────────────────────
+   Mismos valores que DashboardAdmin.css para consistencia visual.
+   ─────────────────────────────────────────────────────────────────────────── */
+:root {
+  --color-bg:           #141414;
+  --color-surface:      #1c1c1c;
+  --color-surface-alt:  #242424;
+  --color-border:       #2e2e2e;
+  --color-text:         #f1efe8;
+  --color-text-muted:   #999999;
+  --color-aqua-light:   #68D8D6;
+  --color-aqua-dark:    #126476;
+  --color-btn-bg:       #058C42;
+  --color-btn-text:     #044D1F;
+  --color-logout:       #e53935;
 
+  --font-xs:   13px;
+  --font-sm:   15px;
+  --font-base: 17px;
+  --font-lg:   20px;
+  --font-xl:   24px;
+}
+
+/* ─── Base ───────────────────────────────────────────────────────────────────*/
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: 'Outfit', 'Segoe UI', system-ui, sans-serif;
+  font-size: var(--font-base);
+}
+
+/* ─── Wrapper — centra la card en pantalla completa ──────────────────────────*/
 .lf-wrap {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #F1EFE8;
-    font-family: 'DM Sans', sans-serif;
-    padding: 2rem 1rem;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: var(--color-bg);
 }
 
+/* ─── Card del formulario ────────────────────────────────────────────────────*/
 .lf-card {
-    background: #ffffff;
-    border: 0.5px solid rgba(0,0,0,0.1);
-    border-radius: 16px;
-    padding: 2.75rem 2.25rem;
-    width: 100%;
-    max-width: 380px;
-    animation: lf-rise 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  width: 100%;
+  max-width: 420px;
+  background: var(--color-surface);
+  border: 2.5px solid #ffffff;
+  border-radius: 14px;
+  padding: 2.2rem 2rem;
 }
 
+/* ─── Marca (logo + nombre) ──────────────────────────────────────────────────*/
 .lf-brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1.8rem;
 }
 
 .lf-mark {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    background: #2C2C2A;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  background: var(--color-surface-alt);
+  border: 1.5px solid #2e2e2e;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .lf-brand-name {
-    font-size: 14px;
-    font-weight: 500;
-    color: #2C2C2A;
-    letter-spacing: 0.01em;
+  font-size: var(--font-xl);
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: 2px;
 }
 
+/* ─── Encabezado del formulario ──────────────────────────────────────────────*/
 .lf-heading {
-    font-family: 'Fraunces', serif;
-    font-size: 24px;
-    font-weight: 300;
-    color: #2C2C2A;
-    line-height: 1.2;
-    margin-bottom: 0.3rem;
+  font-size: var(--font-xl);
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 6px;
 }
 
 .lf-sub {
-    font-size: 13px;
-    color: #888780;
-    font-weight: 300;
-    margin-bottom: 2rem;
+  font-size: var(--font-sm);
+  color: var(--color-text-muted);
+  margin-bottom: 1.6rem;
+  display: block;
+  text-decoration: none;
 }
 
+/* ─── Campos del formulario ──────────────────────────────────────────────────*/
 .lf-field {
-    margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 1rem;
 }
 
 .lf-label {
-    display: block;
-    font-size: 11px;
-    font-weight: 500;
-    color: #888780;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    margin-bottom: 6px;
-}
-
-.lf-input-wrap {
-    position: relative;
+  font-size: var(--font-sm);
+  font-weight: 500;
+  color: var(--color-text-muted);
 }
 
 .lf-input {
-    width: 100%;
-    height: 42px;
-    padding: 0 12px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    background: #F7F6F2;
-    border: 0.5px solid rgba(0,0,0,0.12);
-    border-radius: 8px;
-    color: #2C2C2A;
-    outline: none;
-    transition: border-color 0.15s, box-shadow 0.15s;
+  height: 44px;
+  background: var(--color-surface-alt);
+  border: 1.5px solid #333;
+  border-radius: 8px;
+  padding: 0 14px;
+  color: var(--color-text);
+  font-size: var(--font-base);
+  font-family: inherit;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.2s;
+  appearance: none;
+}
+
+.lf-input::placeholder {
+  color: #555;
 }
 
 .lf-input:focus {
-    border-color: rgba(0,0,0,0.35);
-    box-shadow: 0 0 0 3px rgba(44,44,42,0.06);
-    background: #ffffff;
+  border-color: var(--color-aqua-light);
+}
+
+/* Select — mismo estilo que input */
+select.lf-input {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+}
+
+/* ─── Input de contraseña con toggle ─────────────────────────────────────────*/
+.lf-input-wrap {
+  position: relative;
 }
 
 .lf-input.has-toggle {
-    padding-right: 40px;
+  padding-right: 44px;
 }
 
 .lf-toggle {
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    color: #B4B2A9;
-    transition: color 0.15s;
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: color 0.2s;
 }
 
-.lf-toggle:hover { color: #2C2C2A; }
+.lf-toggle:hover {
+  color: var(--color-aqua-light);
+}
 
+/* ─── Mensaje de error ───────────────────────────────────────────────────────*/
 .lf-error {
-    font-size: 12px;
-    color: #993C1D;
-    margin-top: 6px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    animation: lf-shake 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-sm);
+  color: var(--color-logout);
+  margin-bottom: 1rem;
 }
 
-@keyframes lf-shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-4px); }
-    75% { transform: translateX(4px); }
-}
-
+/* ─── Fila con checkbox "Recordarme" ─────────────────────────────────────────*/
 .lf-row {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin: 0.5rem 0 1.5rem;
-    cursor: pointer;
-    user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 1.4rem;
+  cursor: pointer;
 }
 
 .lf-checkbox {
-    width: 15px;
-    height: 15px;
-    accent-color: #2C2C2A;
-    cursor: pointer;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-aqua-light);
+  cursor: pointer;
 }
 
 .lf-remember {
-    font-size: 13px;
-    color: #5F5E5A;
+  font-size: var(--font-sm);
+  color: var(--color-text-muted);
 }
 
+/* ─── Botón principal ────────────────────────────────────────────────────────*/
 .lf-btn {
-    width: 100%;
-    height: 42px;
-    background: #2C2C2A;
-    color: #F1EFE8;
-    border: none;
-    border-radius: 8px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    letter-spacing: 0.02em;
-    transition: opacity 0.15s, transform 0.1s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
+  width: 100%;
+  height: 46px;
+  background: var(--color-btn-bg);
+  border: none;
+  border-radius: 9px;
+  color: var(--color-btn-text);
+  font-size: var(--font-base);
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: filter 0.2s;
+  margin-top: 0.4rem;
 }
 
-.lf-btn:hover:not(:disabled) { opacity: 0.82; }
-.lf-btn:active:not(:disabled) { transform: scale(0.99); }
-.lf-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.lf-btn:hover:not(:disabled) {
+  filter: brightness(1.12);
+}
 
+.lf-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ─── Spinner de carga ───────────────────────────────────────────────────────*/
 .lf-spinner {
-    width: 15px;
-    height: 15px;
-    border: 2px solid rgba(241,239,232,0.3);
-    border-top-color: #F1EFE8;
-    border-radius: 50%;
-    animation: lf-spin 0.7s linear infinite;
+  width: 16px;
+  height: 16px;
+  border: 2.5px solid rgba(4, 77, 31, 0.3);
+  border-top-color: var(--color-btn-text);
+  border-radius: 50%;
+  animation: lf-spin 0.7s linear infinite;
+  flex-shrink: 0;
 }
 
 @keyframes lf-spin {
-    to { transform: rotate(360deg); }
+  to { transform: rotate(360deg); }
+}
+
+.lf-logo {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  border-radius: 9px;
 }

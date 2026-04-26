@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import './Login.css'
+import arpaLogo from "./assets/arpa_con_fondo.png";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -59,14 +60,7 @@ export default function LoginForm() {
       <div className="lf-wrap">
         <div className="lf-card">
           <div className="lf-brand">
-            <div className="lf-mark">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <rect x="2" y="2" width="5" height="5" rx="1" fill="#F1EFE8"/>
-                <rect x="9" y="2" width="5" height="5" rx="1" fill="#F1EFE8" opacity="0.5"/>
-                <rect x="2" y="9" width="5" height="5" rx="1" fill="#F1EFE8" opacity="0.5"/>
-                <rect x="9" y="9" width="5" height="5" rx="1" fill="#F1EFE8"/>
-              </svg>
-            </div>
+            <img src={arpaLogo} alt="ARPA logo" className="lf-logo" />
             <span className="lf-brand-name">ARPA</span>
           </div>
 
