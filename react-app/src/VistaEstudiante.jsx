@@ -3,15 +3,14 @@ import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
 import './App.css'
+import BarraSuperior from './BarraSuperior'
 
-function App() {
+function VistaEstudiante() {
   const [count, setCount] = useState(0)
 
   return (
-    <div>
-        <h1> Esta es la vista de estudiante </h1>
-    </div>
+    <BarraSuperior />
   )
 }
 
-export default App
+export default VistaEstudiante
