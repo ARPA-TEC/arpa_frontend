@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import arpaLogo from "./assets/arpa_con_fondo.png";
 import './Login.css'
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
@@ -76,9 +77,9 @@ function Login_estudiante() {
         <div className="lf-brand">
           <div className="lf-mark">
             {/* Ícono o inicial */}
-            <span style={{ color: '#F1EFE8', fontSize: '14px', fontWeight: 600 }}>A</span>
+              <img src={arpaLogo} alt="ARPA logo" className="admin-logo" />
           </div>
-          <span className="lf-brand-name">Arpa</span>
+          <span className="lf-brand-name">ARPA</span>
         </div>
 
         {/* Título */}
