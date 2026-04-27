@@ -1,0 +1,371 @@
+@import url('https://fonts.googleapis.com/css2?family=Krona+One&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lao+Muang+Don&display=swap');
+
+/* ─── Tokens ──────────────────────────────────────────────────────────────── */
+:root {
+  --color-bg:           #0d0d0d;
+  --color-surface:      #1a1a1a;
+  --color-border:       #ffffff;
+  --color-text:         #f1efe8;
+  --color-text-muted:   #888888;
+  --color-logout:       #e53935;
+
+  /* Skills */
+  --color-green-bg:     #6db33f;
+  --color-green-badge:  #4a9420;
+  --color-green-bar:    #4a8a20;
+
+  /* Amarillo más claro */
+  --color-amber-bg:     #f0c040;
+  --color-amber-pill:   #c99a18;
+  --color-amber-bar:    #e8b820;
+
+  --color-red-bg:       #c0392b;
+  --color-red-dark:     #7a1f17;
+  --color-red-bar:      #8b1a14;
+
+  --color-white-bg:     #e8e4dc;
+  --color-white-bar:    #5aa829;
+
+  --font-sm:   15px;
+  --font-base: 18px;
+  --font-lg:   22px;
+  --font-xl:   26px;
+  --font-2xl:  32px;
+
+  --radius-card: 16px;
+  --radius-pill: 10px;
+  --border-thin: 2.5px;
+  --border-thick: 5px;
+}
+
+/* ─── Reset ───────────────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ─── Root ────────────────────────────────────────────────────────────────── */
+.ve-root {
+  min-height: 100vh;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: 'Krona One', sans-serif;
+  font-size: var(--font-base);
+}
+
+/* ─── Header ──────────────────────────────────────────────────────────────── */
+.ve-header {
+  background: var(--color-bg);
+  padding: 0 1.8rem;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ve-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ve-brand-icon {
+  width: 52px;
+  height: 52px;
+  background: #f0ece6;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.ve-brand-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 10px;
+}
+
+.ve-brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ve-brand-name {
+  font-family: 'Krona One', sans-serif;
+  font-size: var(--font-xl);
+  font-weight: 400;
+  color: var(--color-text);
+  letter-spacing: 1px;
+  line-height: 1;
+}
+
+/* "Portal de estudiante" en Lao Muang Don */
+.ve-brand-sub {
+  font-family: 'Lao Muang Don', sans-serif;
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.ve-header-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.ve-welcome {
+  font-family: 'Krona One', sans-serif;
+  font-size: var(--font-2xl);
+  font-weight: 400;
+  color: var(--color-text);
+}
+
+.ve-logout-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-logout);
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.ve-logout-btn:hover {
+  background: rgba(229, 57, 53, 0.12);
+}
+
+/* ─── Main content ────────────────────────────────────────────────────────── */
+.ve-main {
+  padding: 0.4rem 1rem 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ─── Section cards — borde más grueso abajo y derecha ────────────────────── */
+.ve-section-card {
+  background: var(--color-surface);
+  border-top:    var(--border-thin) solid var(--color-border);
+  border-left:   var(--border-thin) solid var(--color-border);
+  border-bottom: var(--border-thick) solid var(--color-border);
+  border-right:  var(--border-thick) solid var(--color-border);
+  border-radius: var(--radius-card);
+  padding: 1rem 1.4rem 1.4rem;
+}
+
+/* Título: izquierda, más grande */
+.ve-section-title {
+  font-family: 'Krona One', sans-serif;
+  font-size: var(--font-2xl);
+  font-weight: 400;
+  color: var(--color-text);
+  text-align: left;
+  margin-bottom: 1rem;
+}
+
+/* ─── Tutor inner ─────────────────────────────────────────────────────────── */
+.ve-tutor-inner {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.ve-tutor-avatar {
+  width: 90px;
+  height: 90px;
+  background: #c8c4bc;
+  border-radius: 10px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.ve-tutor-avatar svg {
+  width: 56px;
+  height: 56px;
+  color: #6a6560;
+}
+
+.ve-tutor-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ve-tutor-name {
+  font-family: 'Krona One', sans-serif;
+  font-size: var(--font-xl);
+  font-weight: 400;
+  color: var(--color-text);
+}
+
+/* Email en Lao Muang Don */
+.ve-tutor-email {
+  font-family: 'Lao Muang Don', sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-base);
+  color: var(--color-text-muted);
+}
+
+.ve-tutor-email svg {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+/* ─── CEFR bar ────────────────────────────────────────────────────────────── */
+.ve-cefr-wrap {
+  margin-bottom: 0.8rem;
+}
+
+.ve-cefr-bar-track {
+  width: 100%;
+  height: 22px;
+  background: #3a3a3a;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.ve-cefr-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #a8a8a8 0%, #d0ccc8 50%, #888 100%);
+  border-radius: 999px;
+  width: 55%;
+}
+
+.ve-cefr-labels {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 2px;
+}
+
+.ve-cefr-label {
+  font-size: var(--font-base);
+  font-weight: 600;
+  color: var(--color-text);
+  flex: 1;
+  text-align: left;
+}
+
+.ve-cefr-label:last-child {
+  text-align: right;
+}
+
+.ve-cefr-label.muted {
+  color: var(--color-text-muted);
+}
+
+/* ─── Skills grid — gap reducido ─────────────────────────────────────────── */
+.ve-skills-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+/* ─── Skill card ──────────────────────────────────────────────────────────── */
+.ve-skill-card {
+  border-radius: var(--radius-pill);
+  padding: 12px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ve-skill-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ve-skill-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ve-skill-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.ve-skill-name {
+  font-family: 'Krona One', sans-serif;
+  font-size: var(--font-lg);
+  font-weight: 400;
+}
+
+.ve-skill-badge {
+  font-family: 'Krona One', sans-serif;
+  font-size: var(--font-sm);
+  font-weight: 400;
+  padding: 4px 14px;
+  border-radius: 8px;
+}
+
+/* Sin overflow:hidden en el track para evitar líneas artefacto */
+.ve-skill-bar-track {
+  width: 100%;
+  height: 14px;
+  border-radius: 999px;
+}
+
+.ve-skill-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+}
+
+/* ── Green ── */
+.ve-skill-green { background: var(--color-green-bg); }
+.ve-skill-green .ve-skill-name  { color: #1a2e0a; }
+.ve-skill-green .ve-skill-icon  { color: #1a2e0a; }
+.ve-skill-green .ve-skill-badge { background: var(--color-green-badge); color: #d4edbc; }
+.ve-skill-green .ve-skill-bar-track { background: rgba(0,0,0,0.22); }
+.ve-skill-green .ve-skill-bar-fill  { background: var(--color-green-bar); }
+
+/* ── Amber (más claro) ── */
+.ve-skill-amber { background: var(--color-amber-bg); }
+.ve-skill-amber .ve-skill-name  { color: #2d1e00; }
+.ve-skill-amber .ve-skill-icon  { color: #2d1e00; }
+.ve-skill-amber .ve-skill-badge { background: var(--color-amber-pill); color: #fff8e6; }
+.ve-skill-amber .ve-skill-bar-track { background: rgba(0,0,0,0.18); }
+.ve-skill-amber .ve-skill-bar-fill  { background: var(--color-amber-bar); }
+
+/* ── Red ── */
+.ve-skill-red { background: var(--color-red-bg); }
+.ve-skill-red .ve-skill-name  { color: #fce8e6; }
+.ve-skill-red .ve-skill-icon  { color: #fce8e6; }
+.ve-skill-red .ve-skill-badge { background: var(--color-red-dark); color: #f5c6c4; }
+.ve-skill-red .ve-skill-bar-track { background: rgba(0,0,0,0.30); }
+.ve-skill-red .ve-skill-bar-fill  { background: var(--color-red-bar); }
+
+/* ── White ── */
+.ve-skill-white { background: var(--color-white-bg); }
+.ve-skill-white .ve-skill-name  { color: #1a1a1a; }
+.ve-skill-white .ve-skill-icon  { color: #1a1a1a; }
+.ve-skill-white .ve-skill-badge { background: var(--color-green-badge); color: #d4edbc; }
+.ve-skill-white .ve-skill-bar-track { background: #c0bbb2; }
+.ve-skill-white .ve-skill-bar-fill  { background: var(--color-white-bar); }
+
+/* ─── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .ve-header { padding: 0 1rem; height: 72px; }
+  .ve-main { padding: 0.4rem 0.8rem 2rem; }
+  .ve-welcome { font-size: var(--font-xl); }
+  .ve-skills-grid { grid-template-columns: 1fr; }
+}
