@@ -15,4 +15,4 @@ function BarraSuperior() {
   )
 }
 
-export default Login_estudiante
+export default BarraSuperior

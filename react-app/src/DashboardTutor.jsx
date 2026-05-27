@@ -5,6 +5,13 @@ import exclamationIcon from "./assets/exclamationIcon.png";
 import './DashboardTutor.css'
 
 // --- Mock Data ---
+function calcDuracion(inicio, fin) {
+  const [sh, sm] = inicio.split(':').map(Number)
+  const [eh, em] = fin.split(':').map(Number)
+  const hrs = Math.round(((eh * 60 + em) - (sh * 60 + sm)) / 60 * 10) / 10
+  return `${hrs} hr`
+}
+
 const TUTOR = { name: 'Sebastian', horasCompletadas: 90, horasTotal: 120 }
 
 const SKILL_COLORS = ['red', 'green', 'amber', 'gray']
@@ -43,7 +50,7 @@ const ESTUDIANTES = [
   },
 ]
 
-const BITACORAS = [
+const BITACORAS_INIT = [
   {
     id: 1,
     estudiante: 'Santiago Rodriguez',
@@ -91,7 +98,7 @@ const INCIDENCIAS = [
 
 function EstudianteCard({ estudiante }) {
   return (
-    <div className="card">
+    <div className="card" data-testid="estudiante-card">
       <div className="estudiante-header">
         <div className="estudiante-titulo">
           <h2>{estudiante.nombre}</h2>
@@ -143,7 +150,7 @@ function EstudianteCard({ estudiante }) {
 }
 function BitacoraCard({ b }) {
   return (
-    <div className="card">
+    <div className="card" data-testid="bitacora-card">
       <div className="bitacora-top">
         <div>
           <h3>{b.estudiante}</h3>
@@ -178,7 +185,87 @@ function IncidenciaCard({ inc }) {
   )
 }
 
+function ModalAddBitacora({ estudiantes, onConfirm, onClose }) {
+  const [form, setForm] = useState({
+    estudiante: '', fecha: '', horaInicio: '', horaFin: '', notas: '',
+  })
+  const set = (key, val) => setForm((f) => ({ ...f, [key]: val }))
+
+  const handleConfirm = () => {
+    const { estudiante, fecha, horaInicio, horaFin, notas } = form
+    if (!estudiante || !fecha || !horaInicio || !horaFin || !notas) return
+    onConfirm(form)
+  }
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2 className="modal-title">Añadir bitácora</h2>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="modal-form">
+          <div className="form-field">
+            <label>Estudiante</label>
+            <select value={form.estudiante} onChange={(e) => set('estudiante', e.target.value)}>
+              <option value="">Seleccionar estudiante</option>
+              {estudiantes.map((e) => (
+                <option key={e.id} value={e.nombre}>{e.nombre}</option>
+              ))}
+            </select>
+          </div>
+          <div className="form-field">
+            <label>Fecha (dd/mm/aaaa)</label>
+            <input type="text" placeholder="10/04/2026" value={form.fecha}
+              onChange={(e) => set('fecha', e.target.value)} />
+          </div>
+          <div className="form-field">
+            <label>Hora inicio</label>
+            <input type="time" value={form.horaInicio}
+              onChange={(e) => set('horaInicio', e.target.value)} />
+          </div>
+          <div className="form-field">
+            <label>Hora fin</label>
+            <input type="time" value={form.horaFin}
+              onChange={(e) => set('horaFin', e.target.value)} />
+          </div>
+          <div className="form-field">
+            <label>Notas</label>
+            <textarea rows={4} placeholder="Describe lo que se trabajó..."
+              value={form.notas} onChange={(e) => set('notas', e.target.value)}
+              style={{ background: 'var(--color-surface-alt)', border: '1.5px solid #333',
+                borderRadius: '7px', padding: '8px 12px', color: 'var(--color-text)',
+                fontSize: 'var(--font-sm)', fontFamily: 'inherit', resize: 'vertical', width: '100%', outline: 'none' }}
+            />
+          </div>
+        </div>
+        <div className="modal-actions">
+          <button className="btn-modal-cancel" onClick={onClose}>Cancelar</button>
+          <button className="btn-add-primary" onClick={handleConfirm}>Añadir bitácora</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function DashboardTutor() {
+  const handleAddBitacora = (form) => {
+    const nueva = {
+      id: bitacoras.length + 1,
+      estudiante: form.estudiante,
+      fecha: form.fecha,
+      horaInicio: form.horaInicio,
+      horaFin: form.horaFin,
+      duracion: calcDuracion(form.horaInicio, form.horaFin),
+      notas: form.notas,
+    }
+    setBitacoras((prev) => [nueva, ...prev])
+    setModalAbierto(false)
+  }
+
+  const [bitacoras, setBitacoras] = useState(BITACORAS_INIT)
+  const [modalAbierto, setModalAbierto] = useState(false)
+
   const navigate = useNavigate()
   const [tab, setTab]         = useState('estudiantes')
   const [busqueda, setBusqueda] = useState('')
@@ -189,7 +276,7 @@ export default function DashboardTutor() {
   const estudiantesFiltrados = ESTUDIANTES.filter((e) =>
     e.nombre.toLowerCase().includes(busqueda.toLowerCase())
   )
-  const bitacorasFiltradas = BITACORAS.filter((b) =>
+  const bitacorasFiltradas = bitacoras.filter((b) =>
     b.estudiante.toLowerCase().includes(busqueda.toLowerCase())
   )
 
@@ -239,6 +326,7 @@ export default function DashboardTutor() {
         {TABS.map((t) => (
           <button
             key={t}
+            data-testid={`tab-${t}`}
             className={`tab-btn ${tab === t ? 'tab-active' : ''}`}
             onClick={() => { setTab(t); setBusqueda('') }}
           >
@@ -250,12 +338,13 @@ export default function DashboardTutor() {
       <div className="search-bar-row">
         <input
           className="search-input"
+          data-testid="search-input"
           placeholder={tab === 'bitacoras' ? 'Filtrar estudiantes' : 'Seleccionar estudiante'}
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
         />
         {tab === 'bitacoras' && (
-          <button className="btn-añadir">Añadir bitácora</button>
+          <button className="btn-añadir" onClick={() => setModalAbierto(true)}>Añadir bitácora</button>
         )}
       </div>
 
@@ -269,6 +358,13 @@ export default function DashboardTutor() {
         {tab === 'incidencias' &&
           INCIDENCIAS.map((inc) => <IncidenciaCard key={inc.id} inc={inc} />)}
       </main>
+      {modalAbierto && (
+        <ModalAddBitacora
+          estudiantes={ESTUDIANTES}
+          onConfirm={handleAddBitacora}
+          onClose={() => setModalAbierto(false)}
+        />
+      )}
     </div>
   )
 }
