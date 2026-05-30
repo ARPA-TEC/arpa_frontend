@@ -60,7 +60,7 @@ function Login_estudiante() {
 
       localStorage.setItem('token', token)
       localStorage.setItem('user', JSON.stringify(userData))
-      navigate('/VistaEstudiante')
+      navigate('/dashboard/estudiante')
 
     } catch (err) {
       setError('Error de conexión. Intenta de nuevo.')
