@@ -137,7 +137,7 @@ export default function LoginForm() {
               </p>
             )}
 
-            <a href="/Login_estudiante" className="lf-sub">
+            <a href="/login/estudiante" className="lf-sub">
               Iniciar sesión como estudiante
             </a>
 
