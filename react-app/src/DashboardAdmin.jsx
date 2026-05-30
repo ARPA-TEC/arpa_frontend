@@ -132,12 +132,52 @@ function ModalAddStudent({ tutors, onConfirm, onClose }) {
 
 // ─── Modal añadir tutor ───────────────────────────────────────────────────────
 function ModalAddTutor({ onConfirm, onClose }) {
-  const [form, setForm] = useState({ name: "", matricula: "", level: "", email: "" });
+  const [form, setForm] = useState({ nombre: "", apellido: "", email: "", password: "" });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const set = (key, val) => setForm((f) => ({ ...f, [key]: val }));
 
-  const handleConfirm = () => {
-    if (!form.name || !form.matricula || !form.level || !form.email) return;
-    onConfirm(form);
+  const handleConfirm = async () => {
+    if (!form.nombre || !form.apellido || !form.email || !form.password) return;
+    setLoading(true);
+    setError("");
+
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch("http://localhost:3000/api/users/tutores", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          nombre: form.nombre,
+          apellido: form.apellido,
+          email: form.email,
+          password: form.password,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.message || "Error al crear tutor.");
+        return;
+      }
+
+      onConfirm({
+        id: data.user.id,
+        id_tutor: data.user.id,
+        name: `${data.user.nombre} ${data.user.apellido}`,
+        email: data.user.email,
+        matricula: `T-${data.user.id}`,
+        hrs: 0,
+        logs: [],
+      });
+    } catch {
+      setError("Error de conexión.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -145,27 +185,27 @@ function ModalAddTutor({ onConfirm, onClose }) {
       <div className="modal-form">
         <div className="form-field">
           <label>Nombre</label>
-          <input type="text" placeholder="Nombre completo" value={form.name} onChange={(e) => set("name", e.target.value)} />
+          <input type="text" placeholder="Nombre" value={form.nombre} onChange={(e) => set("nombre", e.target.value)} />
         </div>
         <div className="form-field">
-          <label>Matrícula</label>
-          <input type="text" placeholder="A0173XXXX" value={form.matricula} onChange={(e) => set("matricula", e.target.value)} />
-        </div>
-        <div className="form-field">
-          <label>Nivel de idioma</label>
-          <select value={form.level} onChange={(e) => set("level", e.target.value)}>
-            <option value="">Seleccionar nivel</option>
-            {["A1","A2","B1","B2","C1","C2"].map((l) => <option key={l} value={l}>{l}</option>)}
-          </select>
+          <label>Apellido</label>
+          <input type="text" placeholder="Apellido" value={form.apellido} onChange={(e) => set("apellido", e.target.value)} />
         </div>
         <div className="form-field">
           <label>Correo electrónico</label>
           <input type="email" placeholder="nombre@correo.com" value={form.email} onChange={(e) => set("email", e.target.value)} />
         </div>
+        <div className="form-field">
+          <label>Contraseña</label>
+          <input type="password" placeholder="Contraseña" value={form.password} onChange={(e) => set("password", e.target.value)} />
+        </div>
+        {error && <p style={{ color: "red", fontSize: "13px" }}>{error}</p>}
       </div>
       <div className="modal-actions">
         <button className="btn-modal-cancel" onClick={onClose}>Cancelar</button>
-        <button className="btn-add-primary" onClick={handleConfirm}>Añadir tutor</button>
+        <button className="btn-add-primary" onClick={handleConfirm} disabled={loading}>
+          {loading ? "Guardando..." : "Añadir tutor"}
+        </button>
       </div>
     </Modal>
   );
@@ -355,14 +395,8 @@ export default function DashboardAdmin() {
     setModal(null);
   };
 
-  const handleAddTutor = (form) => {
-    setTutors((prev) => [...prev, {
-      id: prev.length + 1,
-      name: form.name,
-      matricula: form.matricula,
-      hrs: 0,
-      logs: [],
-    }]);
+  const handleAddTutor = (tutorData) => {
+    setTutors((prev) => [...prev, tutorData]);
     setModal(null);
   };
 
