@@ -44,12 +44,53 @@ function Modal({ title, onClose, children }) {
 
 // ─── Modal añadir estudiante ──────────────────────────────────────────────────
 function ModalAddStudent({ tutors, onConfirm, onClose }) {
-  const [form, setForm] = useState({ name: "", level: "", tutor: "" });
+  const [form, setForm] = useState({ nombre: "", apellido: "", level: "", id_tutor: "" });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const set = (key, val) => setForm((f) => ({ ...f, [key]: val }));
 
-  const handleConfirm = () => {
-    if (!form.name || !form.level || !form.tutor) return;
-    onConfirm(form);
+  const NIVEL_MAP = { A1: 1, A2: 2, B1: 3, B2: 4, C1: 5, C2: 6 };
+
+  const handleConfirm = async () => {
+    
+    if (!form.nombre || !form.apellido || !form.level || !form.id_tutor) return;
+    setLoading(true);
+    setError("");
+
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch("http://localhost:3000/api/students", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          nombre: form.nombre,
+          apellido: form.apellido,
+          id_tutor: Number(form.id_tutor),
+          id_nivel: NIVEL_MAP[form.level],
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.message || "Error al crear estudiante.");
+        return;
+      }
+
+      onConfirm({
+        id: data.student.id,
+        name: `${data.student.nombre} ${data.student.apellido}`,
+        level: form.level,
+        tutor: tutors.find(t => t.id === Number(form.id_tutor))?.name || "",
+        skills: {},
+      });
+    } catch {
+      setError("Error de conexión.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -57,7 +98,11 @@ function ModalAddStudent({ tutors, onConfirm, onClose }) {
       <div className="modal-form">
         <div className="form-field">
           <label>Nombre</label>
-          <input type="text" placeholder="Nombre completo" value={form.name} onChange={(e) => set("name", e.target.value)} />
+          <input type="text" placeholder="Nombre" value={form.nombre} onChange={(e) => set("nombre", e.target.value)} />
+        </div>
+        <div className="form-field">
+          <label>Apellido</label>
+          <input type="text" placeholder="Apellido" value={form.apellido} onChange={(e) => set("apellido", e.target.value)} />
         </div>
         <div className="form-field">
           <label>Nivel MCER</label>
@@ -68,15 +113,18 @@ function ModalAddStudent({ tutors, onConfirm, onClose }) {
         </div>
         <div className="form-field">
           <label>Tutor asignado</label>
-          <select value={form.tutor} onChange={(e) => set("tutor", e.target.value)}>
+          <select value={form.id_tutor} onChange={(e) => set("id_tutor", e.target.value)}>
             <option value="">Seleccionar tutor</option>
-            {tutors.map((t) => <option key={t.id} value={t.name}>{t.name}</option>)}
+            {tutors.map((t) => <option key={t.id} value={t.id_tutor}>{t.name}</option>)}
           </select>
         </div>
+        {error && <p style={{ color: "red", fontSize: "13px" }}>{error}</p>}
       </div>
       <div className="modal-actions">
         <button className="btn-modal-cancel" onClick={onClose}>Cancelar</button>
-        <button className="btn-add-primary" onClick={handleConfirm}>Añadir estudiante</button>
+        <button className="btn-add-primary" onClick={handleConfirm} disabled={loading}>
+          {loading ? "Guardando..." : "Añadir estudiante"}
+        </button>
       </div>
     </Modal>
   );
@@ -302,14 +350,8 @@ export default function DashboardAdmin() {
     setSearch("");
   };
 
-  const handleAddStudent = (form) => {
-    setStudents((prev) => [...prev, {
-      id: prev.length + 1,
-      name: form.name,
-      level: form.level,
-      tutor: form.tutor,
-      skills: { Reading: 0, Speaking: 0, Writing: 0, Listening: 0 },
-    }]);
+  const handleAddStudent = (studentData) => {
+    setStudents((prev) => [...prev, studentData]);
     setModal(null);
   };
 
