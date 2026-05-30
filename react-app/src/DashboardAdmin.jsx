@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import arpaLogo from "./assets/arpa_con_fondo.png";
 import { Bar } from "react-chartjs-2";
@@ -13,59 +13,18 @@ import "./DashboardAdmin.css";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip);
 
-// ─── Datos de ejemplo ─────────────────────────────────────────────────────────
-// TODO: reemplazar con fetch(`/api/students`) y fetch(`/api/tutors`) en useEffect
-const MOCK_STUDENTS = [
-  {
-    id: 1,
-    name: "Oriana Cañizales",
-    level: "B2",
-    tutor: "Sebastián Ponce",
-    skills: { Reading: 99, Speaking: 72, Writing: 88, Listening: 98 },
-  },
-  {
-    id: 2,
-    name: "Santiago Rodríguez",
-    level: "B2",
-    tutor: "Sebastián Ponce",
-    skills: { Reading: 98, Speaking: 85, Writing: 91, Listening: 98 },
-  },
-  {
-    id: 3,
-    name: "Mariana López",
-    level: "A2",
-    tutor: "Dariana Vega",
-    skills: { Reading: 64, Speaking: 55, Writing: 70, Listening: 60 },
-  },
-];
-
-const MOCK_TUTORS = [
-  {
-    id: 1,
-    name: "Sebastián Ponce",
-    matricula: "A01738027",
-    hrs: 90,
-    logs: [
-      { ref: "Santiago Rodríguez", date: "10/04/2026", start: "10:30", end: "12:00" },
-    ],
-  },
-  { id: 2, name: "Dariana Vega",  matricula: "A01738028", hrs: 120, logs: [] },
-  { id: 3, name: "Luis Salinas",  matricula: "A01738029", hrs: 60,  logs: [] },
-];
-
 const BAR_COLORS = ["#7c3131", "#0f6e56", "#b07c17", "#534AB7", "#3a3a3a"];
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-function calcHrs(start, end) {
-  const [sh, sm] = start.split(":").map(Number);
-  const [eh, em] = end.split(":").map(Number);
-  return Math.round(((eh * 60 + em) - (sh * 60 + sm)) / 60 * 10) / 10;
-}
 
 function skillColorClass(score) {
   if (score >= 90) return "skill-green";
   if (score >= 75) return "skill-amber";
   return "skill-red";
+}
+
+function calcHrs(start, end) {
+  const [sh, sm] = start.split(":").map(Number);
+  const [eh, em] = end.split(":").map(Number);
+  return Math.round(((eh * 60 + em) - (sh * 60 + sm)) / 60 * 10) / 10;
 }
 
 // ─── Modal base ───────────────────────────────────────────────────────────────
@@ -223,58 +182,37 @@ function TutorCard({ tutor, onAddLog }) {
           <div className="add-hours-form">
             <div className="form-field">
               <label>Nombre de referencia</label>
-              <input
-                type="text"
-                placeholder="Nombre del estudiante"
-                value={form.ref}
-                onChange={(e) => setForm({ ...form, ref: e.target.value })}
-              />
+              <input type="text" placeholder="Nombre del estudiante" value={form.ref}
+                onChange={(e) => setForm({ ...form, ref: e.target.value })} />
             </div>
             <div className="form-field">
               <label>Fecha (dd/mm/aaaa)</label>
-              <input
-                type="text"
-                placeholder="10/04/2026"
-                value={form.date}
-                onChange={(e) => setForm({ ...form, date: e.target.value })}
-              />
+              <input type="text" placeholder="10/04/2026" value={form.date}
+                onChange={(e) => setForm({ ...form, date: e.target.value })} />
             </div>
             <div className="form-field">
               <label>Horario inicio</label>
-              <input
-                type="text"
-                placeholder="10:30"
-                value={form.start}
-                onChange={(e) => setForm({ ...form, start: e.target.value })}
-              />
+              <input type="text" placeholder="10:30" value={form.start}
+                onChange={(e) => setForm({ ...form, start: e.target.value })} />
             </div>
             <div className="form-field">
               <label>Horario fin</label>
-              <input
-                type="text"
-                placeholder="12:00"
-                value={form.end}
-                onChange={(e) => setForm({ ...form, end: e.target.value })}
-              />
+              <input type="text" placeholder="12:00" value={form.end}
+                onChange={(e) => setForm({ ...form, end: e.target.value })} />
             </div>
-            <button className="btn-add-hours" onClick={handleAdd}>
-              Añadir horas
-            </button>
+            <button className="btn-add-hours" onClick={handleAdd}>Añadir horas</button>
           </div>
 
           <div className="logs-list">
-            {tutor.logs.map((log, i) => {
-              const hrs = calcHrs(log.start, log.end);
-              return (
-                <div key={i} className="log-entry">
-                  <div className="log-info">
-                    <h3 className="log-ref">{log.ref}</h3>
-                    <p className="log-meta">{log.date} &nbsp; {log.start} – {log.end}</p>
-                  </div>
-                  <span className="log-hrs-badge">{hrs}hr</span>
+            {tutor.logs.map((log, i) => (
+              <div key={i} className="log-entry">
+                <div className="log-info">
+                  <h3 className="log-ref">{log.ref}</h3>
+                  <p className="log-meta">{log.date}</p>
                 </div>
-              );
-            })}
+                <span className="log-hrs-badge">{log.duration}hr</span>
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -287,12 +225,27 @@ export default function DashboardAdmin() {
   const navigate = useNavigate();
   const [tab, setTab] = useState("estudiantes");
   const [search, setSearch] = useState("");
-  const [students, setStudents] = useState(MOCK_STUDENTS);
-  const [tutors, setTutors] = useState(MOCK_TUTORS);
-  const [modal, setModal] = useState(null); // "estudiante" | "tutor" | null
+  const [students, setStudents] = useState([]);
+  const [tutors, setTutors] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [modal, setModal] = useState(null);
 
   const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-  const adminName = storedUser?.name || "Administrador";
+  const adminName = storedUser?.nombre || "Administrador";
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const headers = { Authorization: `Bearer ${token}` };
+
+    Promise.all([
+      fetch("http://localhost:3000/api/students", { headers }).then(r => r.json()),
+      fetch("http://localhost:3000/api/tutors", { headers }).then(r => r.json()),
+    ]).then(([estudiantesData, tutoresData]) => {
+      setStudents(estudiantesData.students ?? []);
+      setTutors((tutoresData.tutors ?? []).map(t => ({ ...t, logs: t.logs || [] })));
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -370,6 +323,8 @@ export default function DashboardAdmin() {
     }]);
     setModal(null);
   };
+
+  if (loading) return <div className="admin-root" style={{ color: "#fff", padding: "2rem" }}>Cargando...</div>;
 
   return (
     <div className="admin-root">
