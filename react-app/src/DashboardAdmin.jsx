@@ -167,7 +167,7 @@ function ModalAddTutor({ onConfirm, onClose }) {
 
       onConfirm({
         id: data.user.id,
-        id_tutor: data.user.id,
+        id_tutor: data.user.id_tutor,
         name: `${data.user.nombre} ${data.user.apellido}`,
         email: data.user.email,
         matricula: data.user.matricula,
