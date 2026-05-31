@@ -132,13 +132,13 @@ function ModalAddStudent({ tutors, onConfirm, onClose }) {
 
 // ─── Modal añadir tutor ───────────────────────────────────────────────────────
 function ModalAddTutor({ onConfirm, onClose }) {
-  const [form, setForm] = useState({ nombre: "", apellido: "", email: "", password: "" });
+  const [form, setForm] = useState({ nombre: "", apellido: "", email: "", password: "", matricula: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const set = (key, val) => setForm((f) => ({ ...f, [key]: val }));
 
   const handleConfirm = async () => {
-    if (!form.nombre || !form.apellido || !form.email || !form.password) return;
+    if (!form.nombre || !form.apellido || !form.email || !form.password || !form.matricula) return;
     setLoading(true);
     setError("");
 
@@ -155,6 +155,7 @@ function ModalAddTutor({ onConfirm, onClose }) {
           apellido: form.apellido,
           email: form.email,
           password: form.password,
+          matricula: form.matricula || null,
         }),
       });
 
@@ -169,7 +170,7 @@ function ModalAddTutor({ onConfirm, onClose }) {
         id_tutor: data.user.id,
         name: `${data.user.nombre} ${data.user.apellido}`,
         email: data.user.email,
-        matricula: `T-${data.user.id}`,
+        matricula: data.user.matricula,
         hrs: 0,
         logs: [],
       });
@@ -190,6 +191,10 @@ function ModalAddTutor({ onConfirm, onClose }) {
         <div className="form-field">
           <label>Apellido</label>
           <input type="text" placeholder="Apellido" value={form.apellido} onChange={(e) => set("apellido", e.target.value)} />
+        </div>
+        <div className="form-field">
+          <label>Matrícula</label>
+          <input type="text" placeholder="A01738027" value={form.matricula} onChange={(e) => set("matricula", e.target.value)} />
         </div>
         <div className="form-field">
           <label>Correo electrónico</label>
