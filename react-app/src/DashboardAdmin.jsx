@@ -340,7 +340,6 @@ function TutorCard({ tutor, onAddLog }) {
                   <h3 className="log-ref">{log.ref ?? log.motivo}</h3>
                   <p className="log-meta">
                     {log.date ?? log.fecha ?? ''}
-                    {log.agregado_por && ` · Agregado por: ${log.agregado_por}`}
                   </p>
                 </div>
                 <span className="log-hrs-badge">{log.duration ?? log.horas}hr</span>
