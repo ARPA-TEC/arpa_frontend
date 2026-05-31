@@ -47,9 +47,12 @@ function ModalAddStudent({ tutors, onConfirm, onClose }) {
 
   const handleConfirm = async () => {
     
-    if (!form.nombre || !form.apellido || !form.level || !form.id_tutor) return;
-    setLoading(true);
-    setError("");
+    if (!form.nombre || !form.apellido || !form.level || !form.id_tutor) {
+        setError("Todos los campos son obligatorios.");
+        return;
+      }
+      setLoading(true);
+      setError("");
 
     const token = localStorage.getItem("token");
     try {
@@ -132,7 +135,10 @@ function ModalAddTutor({ onConfirm, onClose }) {
   const set = (key, val) => setForm((f) => ({ ...f, [key]: val }));
 
   const handleConfirm = async () => {
-    if (!form.nombre || !form.apellido || !form.email || !form.password || !form.matricula) return;
+    if (!form.nombre || !form.apellido || !form.email || !form.password || !form.matricula) {
+      setError("Todos los campos son obligatorios.");
+      return;
+    }
     setLoading(true);
     setError("");
 
@@ -242,7 +248,10 @@ function TutorCard({ tutor, onAddLog }) {
 
   const handleAdd = async () => {
     const { fecha, horas, motivo } = form;
-    if (!fecha || !horas || !motivo) return;
+    if (!fecha || !horas || !motivo) {
+      setError("Todos los campos son obligatorios.");
+      return;
+    }
 
     setLoading(true);
     setError("");
