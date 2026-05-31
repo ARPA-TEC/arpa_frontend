@@ -237,13 +237,45 @@ function StudentCard({ student }) {
 // ─── TutorCard ────────────────────────────────────────────────────────────────
 function TutorCard({ tutor, onAddLog }) {
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ ref: "", date: "", start: "", end: "" });
+  const [form, setForm] = useState({ fecha: "", horas: "", motivo: "" });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleAdd = () => {
-    const { ref, date, start, end } = form;
-    if (!ref || !date || !start || !end) return;
-    onAddLog(tutor.id, { ref, date, start, end });
-    setForm({ ref: "", date: "", start: "", end: "" });
+  const handleAdd = async () => {
+    const { fecha, horas, motivo } = form;
+    if (!fecha || !horas || !motivo) return;
+
+    setLoading(true);
+    setError("");
+
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch(`http://localhost:3000/api/tutors/${tutor.id_tutor}/horas-extras`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          fecha,
+          horas: Number(horas),
+          motivo,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.message || "Error al agregar horas.");
+        return;
+      }
+
+      onAddLog(tutor.id, { fecha, horas: Number(horas), motivo });
+      setForm({ fecha: "", horas: "", motivo: "" });
+    } catch {
+      setError("Error de conexión.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -266,39 +298,53 @@ function TutorCard({ tutor, onAddLog }) {
 
       {open && (
         <div className="tutor-expand">
-          <p className="expand-label">Añadir horas</p>
+          <p className="expand-label">Añadir horas extras</p>
           <div className="add-hours-form">
             <div className="form-field">
-              <label>Nombre de referencia</label>
-              <input type="text" placeholder="Nombre del estudiante" value={form.ref}
-                onChange={(e) => setForm({ ...form, ref: e.target.value })} />
+              <label>Fecha</label>
+              <input
+                type="date"
+                value={form.fecha}
+                onChange={(e) => setForm({ ...form, fecha: e.target.value })}
+              />
             </div>
             <div className="form-field">
-              <label>Fecha (dd/mm/aaaa)</label>
-              <input type="text" placeholder="10/04/2026" value={form.date}
-                onChange={(e) => setForm({ ...form, date: e.target.value })} />
+              <label>Horas extras</label>
+              <input
+                type="number"
+                min="0.5"
+                step="0.5"
+                placeholder="2.5"
+                value={form.horas}
+                onChange={(e) => setForm({ ...form, horas: e.target.value })}
+              />
             </div>
             <div className="form-field">
-              <label>Horario inicio</label>
-              <input type="text" placeholder="10:30" value={form.start}
-                onChange={(e) => setForm({ ...form, start: e.target.value })} />
+              <label>Motivo</label>
+              <input
+                type="text"
+                placeholder="Describe el motivo"
+                value={form.motivo}
+                onChange={(e) => setForm({ ...form, motivo: e.target.value })}
+              />
             </div>
-            <div className="form-field">
-              <label>Horario fin</label>
-              <input type="text" placeholder="12:00" value={form.end}
-                onChange={(e) => setForm({ ...form, end: e.target.value })} />
-            </div>
-            <button className="btn-add-hours" onClick={handleAdd}>Añadir horas</button>
+            {error && <p style={{ color: "red", fontSize: "13px" }}>{error}</p>}
+            <button className="btn-add-hours" onClick={handleAdd} disabled={loading}>
+              {loading ? "Guardando..." : "Añadir horas"}
+            </button>
           </div>
 
           <div className="logs-list">
             {tutor.logs.map((log, i) => (
               <div key={i} className="log-entry">
                 <div className="log-info">
-                  <h3 className="log-ref">{log.ref}</h3>
-                  <p className="log-meta">{log.date}</p>
+                  <h3 className="log-ref">{log.ref ?? log.motivo}</h3>
+                  <p className="log-meta">
+                    {log.date ?? log.fecha ?? ''}
+                    {log.agregado_por && ` · Agregado por: ${log.agregado_por}`}
+                  </p>
                 </div>
-                <span className="log-hrs-badge">{log.duration}hr</span>
+                <span className="log-hrs-badge">{log.duration ?? log.horas}hr</span>
               </div>
             ))}
           </div>
@@ -342,11 +388,11 @@ export default function DashboardAdmin() {
   };
 
   const handleAddLog = (tutorId, logEntry) => {
-    const hrs = calcHrs(logEntry.start, logEntry.end);
+    const adminName = JSON.parse(localStorage.getItem("user") || "{}")?.nombre || "Administrador";
     setTutors((prev) =>
       prev.map((t) =>
         t.id === tutorId
-          ? { ...t, hrs: Math.round((t.hrs + hrs) * 10) / 10, logs: [...t.logs, logEntry] }
+          ? { ...t, hrs: Math.round((t.hrs + logEntry.horas) * 10) / 10, logs: [...t.logs, { ...logEntry, agregado_por: adminName }] }
           : t
       )
     );
