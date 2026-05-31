@@ -21,12 +21,6 @@ function skillColorClass(score) {
   return "skill-red";
 }
 
-function calcHrs(start, end) {
-  const [sh, sm] = start.split(":").map(Number);
-  const [eh, em] = end.split(":").map(Number);
-  return Math.round(((eh * 60 + em) - (sh * 60 + sm)) / 60 * 10) / 10;
-}
-
 // ─── Modal base ───────────────────────────────────────────────────────────────
 function Modal({ title, onClose, children }) {
   return (
