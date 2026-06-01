@@ -440,6 +440,9 @@ export default function DashboardTutor() {
   const [modalBitacora, setModalBitacora] = useState(false)
   const [modalIncidencia, setModalIncidencia] = useState(false)
   const [modalSkill, setModalSkill] = useState(null)
+  const [linkClase, setLinkClase] = useState('')
+  const [editandoLink, setEditandoLink] = useState(false)
+  const [linkTemp, setLinkTemp] = useState('')
 
   useEffect(() => {
     apiFetch('/tutors/me')
@@ -448,6 +451,7 @@ export default function DashboardTutor() {
         setEstudiantes(data.students.map(normalizeStudent))
         setBitacoras(data.bitacoras)
         setIncidencias(data.incidencias)
+        setLinkClase(data.tutor.clase_url ?? '')
       })
       .catch((e) => setErrorCarga(e.message))
       .finally(() => setCargando(false))
@@ -501,6 +505,19 @@ export default function DashboardTutor() {
     </div>
   )
 
+  const handleGuardarLink = async () => {
+    try {
+      await apiFetch('/tutors/me/clase-url', {
+        method: 'PUT',
+        body: JSON.stringify({ clase_url: linkTemp }),
+      })
+      setLinkClase(linkTemp)
+      setEditandoLink(false)
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
   return (
     <div className="dashboard-root">
       <header className="dashboard-nav">
@@ -537,6 +554,41 @@ export default function DashboardTutor() {
           <div className="progress-bar-fill" style={{ width: `${pct}%` }} />
         </div>
       </div>
+
+      <div className="progress-card" style={{ marginTop: 0 }}>
+  <div className="progress-header" style={{ marginBottom: linkClase || editandoLink ? 10 : 0 }}>
+    <p className="progress-title">Link de clase</p>
+    {!editandoLink && (
+      <button className="btn-editar" onClick={() => { setLinkTemp(linkClase); setEditandoLink(true) }}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+        </svg>
+        Editar
+      </button>
+    )}
+  </div>
+  {editandoLink ? (
+    <div style={{ display: 'flex', gap: 8 }}>
+      <input type="url" placeholder="https://meet.google.com/..."
+        value={linkTemp} onChange={(e) => setLinkTemp(e.target.value)}
+        style={{ flex: 1, background: 'var(--color-surface-alt)', border: '1.5px solid #333',
+          borderRadius: 7, padding: '7px 12px', color: 'var(--color-text)',
+          fontSize: 'var(--font-sm)', fontFamily: 'inherit', outline: 'none' }} />
+      <button className="btn-add-primary" onClick={handleGuardarLink}>Guardar</button>
+      <button className="btn-modal-cancel" onClick={() => setEditandoLink(false)}>Cancelar</button>
+    </div>
+  ) : linkClase ? (
+    <a href={linkClase} target="_blank" rel="noopener noreferrer"
+      style={{ color: 'var(--color-aqua-light)', fontSize: 'var(--font-sm)', wordBreak: 'break-all' }}>
+      {linkClase}
+    </a>
+  ) : (
+    <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--font-sm)', fontStyle: 'italic', margin: 0 }}>
+      Sin link asignado
+    </p>
+  )}
+</div>
 
       <nav className="tabs-row">
         {TABS.map((t) => (
