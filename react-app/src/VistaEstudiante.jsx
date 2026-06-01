@@ -111,13 +111,18 @@ export default function Vista_estudiante() {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     })
       .then(r => r.json())
-      .then(setDatos)
+      .then(data => {
+        console.log('Respuesta completa:', data)  // ← agrega esto
+        setDatos(data)
+      })
   }, [])
 
   if (!datos) return <div>Cargando…</div>
 
   const nombre = datos.student.name.split(' ')[0]
+  const email = datos.student.email 
   const nivel = datos.progress.level
+  const tutor = datos.tutor
   const pct = { A1:4, A2:20, B1:38, B2:55, C1:73, C2:92 }[nivel] ?? 4
   const skills = [
     { key:'reading',   nombre:'Reading',   pct: Math.round((datos.progress.skills.Reading   ?? 0) / 120 * 100), color:'red'   },
@@ -162,10 +167,10 @@ export default function Vista_estudiante() {
           <div className="ve-tutor-inner">
             <TutorAvatar />
             <div className="ve-tutor-info">
-              <span className="ve-tutor-name">{nombre}</span>
+              <span className="ve-tutor-name">{tutor.name}</span>
               <span className="ve-tutor-email">
                 <EmailIcon />
-                {TUTOR.email}
+                {tutor.email}
               </span>
             </div>
           </div>
@@ -187,7 +192,7 @@ export default function Vista_estudiante() {
               {['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].map((label) => (
                 <span
                   key={label}
-                  className={`ve-cefr-label${label === NIVEL_CEFR ? '' : ' muted'}`}
+                  className={`ve-cefr-label${label === nivel ? '' : ' muted'}`}
                 >
                   {label}
                 </span>
@@ -197,7 +202,7 @@ export default function Vista_estudiante() {
 
           {/* Skills */}
           <div className="ve-skills-grid">
-            {SKILLS.map((skill) => (
+            {skills.map((skill) => (
               <SkillCard key={skill.key} skill={skill} />
             ))}
           </div>
