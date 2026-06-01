@@ -277,7 +277,8 @@ function TutorCard({ tutor, onAddLog }) {
         return;
       }
 
-      onAddLog(tutor.id, { fecha, horas: Number(horas), motivo });
+      const fechaFormateada = new Date(fecha + 'T00:00:00').toLocaleDateString('es-MX');
+      onAddLog(tutor.id, { fecha: fechaFormateada, horas: Number(horas), motivo });
       setForm({ fecha: "", horas: "", motivo: "" });
     } catch {
       setError("Error de conexión.");
