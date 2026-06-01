@@ -170,8 +170,19 @@ export default function Vista_estudiante() {
               <span className="ve-tutor-name">{tutor.name}</span>
               <span className="ve-tutor-email">
                 <EmailIcon />
-                {tutor.email}
+                  {tutor.email}
               </span>
+
+              {tutor.meet_link && (
+                <a
+                  href={tutor.meet_link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ve-tutor-link"
+                >
+                  Unirse a la reunión
+                </a>
+              )}
             </div>
           </div>
         </section>

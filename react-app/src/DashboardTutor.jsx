@@ -447,6 +447,10 @@ export default function DashboardTutor() {
   useEffect(() => {
     apiFetch('/tutors/me')
       .then((data) => {
+        console.log('DATA COMPLETA:', data)
+        console.log('TUTOR:', data.tutor)
+        console.log('CLASE URL:', data.tutor?.clase_url)
+  
         setTutor(data.tutor)
         setEstudiantes(data.students.map(normalizeStudent))
         setBitacoras(data.bitacoras)
