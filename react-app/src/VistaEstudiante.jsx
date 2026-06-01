@@ -1,59 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import arpaLogo from './assets/arpa_con_fondo.png'
 import './Vista_estudiante.css'
-
-// ─── Mock data (reemplazar con fetch real) ────────────────────────────────────
-const ESTUDIANTE = {
-  nombre: 'Santiago',
-}
-
-const TUTOR = {
-  nombre: 'Sebastian Ponce Vaquero',
-  email: 'A01738027@tec.mx',
-}
-
-const NIVEL_CEFR = 'B2'
-
-// Porcentaje de la barra según nivel CEFR
-const NIVEL_PCT = {
-  A1: 4,
-  A2: 20,
-  B1: 38,
-  B2: 55,
-  C1: 73,
-  C2: 92,
-}
-
-const SKILLS = [
-  {
-    key: 'speaking',
-    nombre: 'Speaking',
-    nivel: 'high',
-    pct: 65,
-    color: 'green',
-  },
-  {
-    key: 'listening',
-    nombre: 'Listening',
-    nivel: 'mid',
-    pct: 72,
-    color: 'amber',
-  },
-  {
-    key: 'reading',
-    nombre: 'Reading',
-    nivel: 'low',
-    pct: 82,
-    color: 'red',
-  },
-  {
-    key: 'writing',
-    nombre: 'Writing',
-    nivel: 'high',
-    pct: 88,
-    color: 'white',
-  },
-]
+import { useState, useEffect } from 'react'
 
 // ─── Icono de pluma (feather / quill) ────────────────────────────────────────
 function QuillIcon({ className }) {
@@ -149,13 +97,34 @@ function SkillCard({ skill }) {
 // ─── Vista Estudiante ─────────────────────────────────────────────────────────
 export default function Vista_estudiante() {
   const navigate = useNavigate()
-  const pct = NIVEL_PCT[NIVEL_CEFR] ?? 55
 
   const handleLogout = () => {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
     navigate('/')
   }
+
+  const [datos, setDatos] = useState(null)
+
+  useEffect(() => {
+    fetch('/api/students/me', {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    })
+      .then(r => r.json())
+      .then(setDatos)
+  }, [])
+
+  if (!datos) return <div>Cargando…</div>
+
+  const nombre = datos.student.name.split(' ')[0]
+  const nivel = datos.progress.level
+  const pct = { A1:4, A2:20, B1:38, B2:55, C1:73, C2:92 }[nivel] ?? 4
+  const skills = [
+    { key:'reading',   nombre:'Reading',   pct: Math.round((datos.progress.skills.Reading   ?? 0) / 120 * 100), color:'red'   },
+    { key:'writing',   nombre:'Writing',   pct: Math.round((datos.progress.skills.Writing   ?? 0) / 120 * 100), color:'white' },
+    { key:'speaking',  nombre:'Speaking',  pct: Math.round((datos.progress.skills.Speaking  ?? 0) / 120 * 100), color:'green' },
+    { key:'listening', nombre:'Listening', pct: Math.round((datos.progress.skills.Listening ?? 0) / 120 * 100), color:'amber' },
+  ]
 
   return (
     <div className="ve-root">
@@ -173,7 +142,7 @@ export default function Vista_estudiante() {
         </div>
 
         <div className="ve-header-right">
-          <span className="ve-welcome">Bienvenido, {ESTUDIANTE.nombre}</span>
+          <span className="ve-welcome">Bienvenido, {nombre}</span>
           <button
             className="ve-logout-btn"
             onClick={handleLogout}
@@ -193,7 +162,7 @@ export default function Vista_estudiante() {
           <div className="ve-tutor-inner">
             <TutorAvatar />
             <div className="ve-tutor-info">
-              <span className="ve-tutor-name">{TUTOR.nombre}</span>
+              <span className="ve-tutor-name">{nombre}</span>
               <span className="ve-tutor-email">
                 <EmailIcon />
                 {TUTOR.email}
