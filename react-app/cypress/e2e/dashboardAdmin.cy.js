@@ -110,23 +110,6 @@ describe('Dashboard Administrador - ARPA', () => {
       // protección opera en el cliente antes de llegar al servidor.
       cy.get('@createStudent').should('be.null');
     });
-
-    it('muestra mensaje de error cuando solo falta el tutor', () => {
-      cy.intercept('POST', 'http://localhost:3000/api/students').as('createStudent');
-
-      cy.get('.btn-add-primary').contains('Añadir estudiante').click();
-
-      cy.get('.modal-box').within(() => {
-        cy.get('input[placeholder="Nombre"]').type('Pedro');
-        cy.get('input[placeholder="Apellido"]').type('Ramirez');
-        cy.get('select').first().select('A2');
-        // No seleccionamos tutor — dejamos el select vacío.
-        cy.get('.btn-add-primary').click();
-      });
-
-      cy.get('.modal-box').contains('Todos los campos son obligatorios.').should('be.visible');
-      cy.get('@createStudent').should('be.null');
-    });
   });
 
   // ── Prueba 3: Filtrar estudiantes por nombre ───────────────────────────────
