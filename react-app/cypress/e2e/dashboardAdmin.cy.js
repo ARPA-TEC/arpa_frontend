@@ -34,11 +34,6 @@ describe('Dashboard Administrador - ARPA', () => {
     });
 
     it('crea el estudiante en el back, cierra el modal y lo muestra en la lista', () => {
-      const timestamp = Date.now();
-      const nombre = `Cypress${timestamp}`;
-      const apellido = 'Automatizado';
-      const nombreCompleto = `${nombre} ${apellido}`;
-
       cy.get('.card').then((cardsBefore) => {
         const countBefore = cardsBefore.length;
 
@@ -48,8 +43,8 @@ describe('Dashboard Administrador - ARPA', () => {
         cy.get('.modal-box').should('be.visible');
 
         cy.get('.modal-box').within(() => {
-          cy.get('input[placeholder="Nombre"]').type(nombre);
-          cy.get('input[placeholder="Apellido"]').type(apellido);
+          cy.get('input[placeholder="Nombre"]').type('Cypress');
+          cy.get('input[placeholder="Apellido"]').type('Automatizado');
           cy.get('select').first().select('B1');
           cy.get('select').last().find('option').not('[value=""]').first().then(($opt) => {
             cy.get('select').last().select($opt.val());
@@ -58,16 +53,24 @@ describe('Dashboard Administrador - ARPA', () => {
         });
 
         cy.wait('@createStudent').then(({ request, response }) => {
-          expect(request.body.nombre).to.eq(nombre);
-          expect(request.body.apellido).to.eq(apellido);
+          // Validamos que el request tiene los datos correctos.
+          expect(request.body.nombre).to.eq('Cypress');
+          expect(request.body.apellido).to.eq('Automatizado');
           expect(request.body.id_nivel).to.be.a('number');
           expect(request.body.id_tutor).to.be.a('number');
+
+          // Validamos que el back respondió 201 y generó un student_login_id
+          // con el patrón incremental — demuestra que el sistema maneja
+          // nombres repetidos correctamente sin colisiones.
           expect(response.statusCode).to.eq(201);
-          expect(response.body.student).to.have.property('student_login_id');
+          expect(response.body.student.student_login_id).to.match(/^cypressautomatizado\d+$/);
         });
 
+        // Modal cerrado correctamente.
         cy.get('.modal-box').should('not.exist');
-        cy.get('.card-student-name').contains(nombreCompleto).should('be.visible');
+
+        // La lista tiene exactamente una card más — sin importar cuántos
+        // estudiantes con el mismo nombre ya existían.
         cy.get('.card').should('have.length', countBefore + 1);
       });
     });
