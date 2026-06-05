@@ -141,7 +141,7 @@ export default function Vista_estudiante() {
             <img src={arpaLogo} alt="Arpa logo" />
           </div>
           <div className="ve-brand-text">
-            <span className="ve-brand-name">Arpa</span>
+            <span className="ve-brand-name">ARPA</span>
             <span className="ve-brand-sub">Portal de estudiante</span>
           </div>
         </div>

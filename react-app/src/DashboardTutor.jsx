@@ -5,6 +5,7 @@ import exclamationIcon from "./assets/exclamationIcon.png"
 import './DashboardTutor.css'
 
 const token = () => localStorage.getItem('token')
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 
 async function apiFetch(path, options = {}) {
   const res = await fetch(`/api${path}`, {
@@ -14,6 +15,12 @@ async function apiFetch(path, options = {}) {
   const data = await res.json()
   if (!res.ok) throw new Error(data.message || 'Error de servidor')
   return data
+}
+
+function resolveEvidenceSrc(url) {
+  if (!url) return null
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) return url
+  return `${API_URL}${url.startsWith('/') ? '' : '/'}${url}`
 }
 
 function fileToBase64(file) {
@@ -159,7 +166,7 @@ function BitacoraCard({ b }) {
           {b.evidencia_url
             ? (
               <div style={{ marginTop: 14, borderRadius: 9, overflow: 'hidden', border: '1.5px solid #2a2a2a', background: '#111', textAlign: 'center' }}>
-                <img src={b.evidencia_url} alt="Evidencia" style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block' }} />
+                <img src={resolveEvidenceSrc(b.evidencia_url)} alt="Evidencia" style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block' }} />
               </div>
             )
             : <p style={{ marginTop: 6, fontSize: 'var(--font-xs)', color: 'var(--color-text-muted)', fontStyle: 'italic' }}>Sin evidencia adjunta</p>
@@ -202,7 +209,7 @@ function IncidenciaCard({ inc }) {
           {inc.evidencia_url
             ? (
               <div style={{ marginTop: 14, borderRadius: 9, overflow: 'hidden', border: '1.5px solid #2a2a2a', background: '#111', textAlign: 'center' }}>
-                <img src={inc.evidencia_url} alt="Evidencia" style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block' }} />
+                <img src={resolveEvidenceSrc(inc.evidencia_url)} alt="Evidencia" style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block' }} />
               </div>
             )
             : <p style={{ marginTop: 6, fontSize: 'var(--font-xs)', color: 'var(--color-text-muted)', fontStyle: 'italic' }}>Sin evidencia adjunta</p>
