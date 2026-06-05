@@ -132,6 +132,15 @@
   gap: 16px;
 }
 
+.semester-switcher {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  width: 230px;
+  flex-shrink: 0;
+}
+
 .admin-welcome {
   font-size: var(--font-lg);
   font-weight: 600;
@@ -226,6 +235,79 @@
   border-color: var(--color-aqua-light);
 }
 
+.dashboard-select {
+  width: 100%;
+  background: var(--color-surface-alt);
+  border: 1.5px solid #2e2e2e;
+  border-radius: 9px;
+  padding: 0 16px;
+  color: var(--color-text);
+  font-size: var(--font-base);
+  font-family: inherit;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--color-text-muted) 50%),
+    linear-gradient(135deg, var(--color-text-muted) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) 50%,
+    calc(100% - 12px) 50%;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+}
+
+.dashboard-select:hover {
+  border-color: var(--color-aqua-light);
+}
+
+.dashboard-select:focus {
+  border-color: var(--color-aqua-light);
+}
+
+.dashboard-select option[value=""] {
+  color: var(--color-text-muted);
+}
+
+.dashboard-select--compact {
+  width: 100%;
+  min-width: 0;
+  height: 40px;
+  padding-right: 34px;
+  font-size: var(--font-sm);
+  box-sizing: border-box;
+}
+
+.semester-create-btn {
+  width: auto;
+  height: 40px;
+  padding: 0 16px;
+  margin-top: 32px;
+  background: rgba(104, 216, 214, 0.15);
+  border: 1.5px solid rgba(104, 216, 214, 0.28);
+  border-radius: 9px;
+  color: var(--color-text);
+  font-size: var(--font-sm);
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: border-color 0.2s, filter 0.2s;
+}
+
+.semester-create-btn:hover {
+  border-color: var(--color-aqua-light);
+  filter: brightness(1.08);
+}
+
 /* Botón primario — Añadir estudiante / Añadir tutor */
 .btn-add-primary {
   height: 44px;
@@ -244,6 +326,44 @@
 
 .btn-add-primary:hover {
   filter: brightness(1.12);
+}
+
+.semester-enroll-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.semester-enroll-row .dashboard-select {
+  min-width: 0;
+  height: 40px;
+  font-size: var(--font-sm);
+}
+
+.btn-add-hours {
+  height: 40px;
+  padding: 0 18px;
+  background: var(--color-btn-bg);
+  border: none;
+  border-radius: 9px;
+  color: var(--color-btn-text);
+  font-size: var(--font-sm);
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: filter 0.2s, opacity 0.2s;
+}
+
+.btn-add-hours:hover {
+  filter: brightness(1.12);
+}
+
+.btn-add-hours:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  filter: none;
 }
 
 /* ─── Lista de cards ─────────────────────────────────────────────────────────*/
@@ -303,6 +423,47 @@
   font-weight: 600;
   padding: 4px 14px;
   border-radius: 7px;
+}
+
+.student-semester-row {
+  margin-top: 10px;
+  margin-bottom: 4px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.tutor-semester-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 18px 12px;
+}
+
+.semester-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 26px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+.semester-pill--active {
+  background: rgba(15, 110, 86, 0.15);
+}
+
+.semester-pill--inactive {
+  background: rgba(83, 74, 183, 0.15);
+}
+
+.semester-pill--active,
+.semester-pill--inactive {
+  border: 1px solid transparent;
+  border-radius: 999px;
 }
 
 /* ─── Skills pills ───────────────────────────────────────────────────────────*/
@@ -490,26 +651,6 @@
   border-color: var(--color-aqua-light);
 }
 
-/* Botón Añadir horas — ocupa todo el ancho del grid */
-.btn-add-hours {
-  grid-column: 1 / -1;
-  height: 40px;
-  background: var(--color-btn-bg);
-  border: none;
-  border-radius: 8px;
-  color: var(--color-btn-text);
-  font-size: var(--font-sm);
-  font-weight: 700;
-  font-family: inherit;
-  cursor: pointer;
-  margin-top: 4px;
-  transition: filter 0.2s;
-}
-
-.btn-add-hours:hover {
-  filter: brightness(1.12);
-}
-
 /* ─── Log entries ────────────────────────────────────────────────────────────*/
 .logs-list {
   display: flex;
@@ -667,4 +808,33 @@
 .btn-modal-cancel:hover {
   border-color: var(--color-text-muted);
   color: var(--color-text);
+}
+
+.semester-active-field {
+  gap: 0;
+}
+
+.semester-active-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-text);
+  font-size: var(--font-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.semester-active-label input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-aqua-light);
+}
+
+.modal-error {
+  color: #f87171;
+  font-size: var(--font-xs);
+  background: rgba(239, 68, 68, 0.08);
+  border-radius: 7px;
+  padding: 8px 12px;
+  margin: 0;
 }

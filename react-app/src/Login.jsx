@@ -25,7 +25,7 @@ export default function LoginForm() {
 
     try {
       const endpoint = role === "ADMINISTRADOR" ? "admin" : "tutor";
-      const res = await fetch(`http://localhost:3000/api/auth/login/${endpoint}`, {
+      const res = await fetch(`/api/auth/login/${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),

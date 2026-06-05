@@ -270,7 +270,7 @@ function ModalEditSkill({ estudiante, onConfirm, onClose }) {
   )
 }
 
-function ModalAddBitacora({ estudiantes, onConfirm, onClose }) {
+function ModalAddBitacora({ estudiantes, semesterId, onConfirm, onClose }) {
   const [form, setForm] = useState({ id_estudiante: '', fecha: '', horaInicio: '', horaFin: '', notas: '' })
   const [evidenciaFile, setEvidenciaFile] = useState(null)
   const [preview, setPreview] = useState(null)
@@ -294,7 +294,14 @@ function ModalAddBitacora({ estudiantes, onConfirm, onClose }) {
       const evidencia_url = evidenciaFile ? await fileToBase64(evidenciaFile) : null
       const result = await apiFetch('/tutors/me/bitacoras', {
         method: 'POST',
-        body: JSON.stringify({ id_estudiante: Number(id_estudiante), fecha_sesion: fecha, duracion_horas, notas, evidencia_url }),
+        body: JSON.stringify({
+          id_estudiante: Number(id_estudiante),
+          id_semestre: Number(semesterId),
+          fecha_sesion: fecha,
+          duracion_horas,
+          notas,
+          evidencia_url,
+        }),
       })
       onConfirm(result.bitacora, form)
     } catch (e) { setError(e.message) }
@@ -356,7 +363,7 @@ function ModalAddBitacora({ estudiantes, onConfirm, onClose }) {
   )
 }
 
-function ModalAddIncidencia({ bitacoras, onConfirm, onClose }) {
+function ModalAddIncidencia({ bitacoras, semesterId, onConfirm, onClose }) {
   const [form, setForm] = useState({ id_bitacora: '', descripcion: '' })
   const [evidenciaFile, setEvidenciaFile] = useState(null)
   const [preview, setPreview] = useState(null)
@@ -378,7 +385,12 @@ function ModalAddIncidencia({ bitacoras, onConfirm, onClose }) {
       const evidencia_url = evidenciaFile ? await fileToBase64(evidenciaFile) : null
       const result = await apiFetch('/tutors/me/incidencias', {
         method: 'POST',
-        body: JSON.stringify({ id_bitacora: Number(form.id_bitacora), descripcion: form.descripcion, evidencia_url }),
+        body: JSON.stringify({
+          id_bitacora: Number(form.id_bitacora),
+          id_semestre: Number(semesterId),
+          descripcion: form.descripcion,
+          evidencia_url,
+        }),
       })
       const bitacoraRef = bitacoras.find((b) => b.id === Number(form.id_bitacora))
       onConfirm(result.incidencia, bitacoraRef)
@@ -432,6 +444,8 @@ export default function DashboardTutor() {
   const [tab, setTab] = useState('estudiantes')
   const [busqueda, setBusqueda] = useState('')
   const [tutor, setTutor] = useState(null)
+  const [semesters, setSemesters] = useState([])
+  const [selectedSemesterId, setSelectedSemesterId] = useState('')
   const [estudiantes, setEstudiantes] = useState([])
   const [bitacoras, setBitacoras] = useState([])
   const [incidencias, setIncidencias] = useState([])
@@ -444,19 +458,28 @@ export default function DashboardTutor() {
   const [editandoLink, setEditandoLink] = useState(false)
   const [linkTemp, setLinkTemp] = useState('')
 
-  useEffect(() => {
-    apiFetch('/tutors/me')
-      .then((data) => {
+  const loadDashboard = async (semesterId = '') => {
+    const path = semesterId ? `/tutors/me?semester_id=${semesterId}` : '/tutors/me'
+    const data = await apiFetch(path)
         console.log('DATA COMPLETA:', data)
         console.log('TUTOR:', data.tutor)
         console.log('CLASE URL:', data.tutor?.clase_url)
   
-        setTutor(data.tutor)
-        setEstudiantes(data.students.map(normalizeStudent))
-        setBitacoras(data.bitacoras)
-        setIncidencias(data.incidencias)
+    setTutor(data.tutor)
+    setSemesters(data.semesters ?? [])
+    setSelectedSemesterId(String(data.semester?.id_semestre ?? semesterId ?? ''))
+    setEstudiantes(data.students.map(normalizeStudent))
+    setBitacoras(data.bitacoras)
+    setIncidencias(data.incidencias)
         setLinkClase(data.tutor.clase_url ?? '')
-      })
+    if (data.semester?.id_semestre) {
+      localStorage.setItem('tutor-semester-id', String(data.semester.id_semestre))
+    }
+  }
+
+  useEffect(() => {
+    const storedSemesterId = localStorage.getItem('tutor-semester-id') || ''
+    loadDashboard(storedSemesterId)
       .catch((e) => setErrorCarga(e.message))
       .finally(() => setCargando(false))
   }, [])
@@ -475,6 +498,7 @@ export default function DashboardTutor() {
       duracion_horas: bitacora.duracion_horas,
       notas: bitacora.notas,
       evidencia_url: bitacora.evidencia_url ?? null,
+      id_semestre: bitacora.id_semestre ?? Number(selectedSemesterId),
     }, ...prev])
     setTutor((prev) => prev ? { ...prev, horas_completadas: prev.horas_completadas + bitacora.duracion_horas } : prev)
     setModalBitacora(false)
@@ -487,8 +511,22 @@ export default function DashboardTutor() {
       fecha: incidencia.fecha_incidente,
       descripcion: incidencia.descripcion,
       evidencia_url: incidencia.evidencia_url ?? null,
+      id_semestre: incidencia.id_semestre ?? Number(selectedSemesterId),
     }, ...prev])
     setModalIncidencia(false)
+  }
+
+  const handleSemesterChange = async (semesterId) => {
+    setCargando(true)
+    setErrorCarga(null)
+    try {
+      await loadDashboard(semesterId)
+      localStorage.setItem('tutor-semester-id', semesterId)
+    } catch (e) {
+      setErrorCarga(e.message)
+    } finally {
+      setCargando(false)
+    }
   }
 
   const estudiantesFiltrados = estudiantes.filter((e) => (e.name ?? '').toLowerCase().includes(busqueda.toLowerCase()))
@@ -535,8 +573,24 @@ export default function DashboardTutor() {
           </div>
         </div>
         <div className="nav-right">
-          <span className="nav-welcome">Bienvenido, {tutor?.name?.split(' ')[0]}</span>
-          <button className="logout-btn" title="Cerrar sesión" onClick={() => navigate('/')}>
+          <div className="semester-switcher">
+            <span className="nav-welcome">Bienvenido, {tutor?.name?.split(' ')[0]}</span>
+            <select
+              className="dashboard-select dashboard-select--compact"
+              value={selectedSemesterId}
+              onChange={(e) => handleSemesterChange(e.target.value)}
+            >
+              {semesters.map((semester) => (
+                <option key={semester.id_semestre} value={semester.id_semestre}>
+                  {semester.nombre} {semester.activo ? '(activo)' : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button className="logout-btn" title="Cerrar sesión" onClick={() => {
+            localStorage.removeItem('tutor-semester-id')
+            navigate('/')
+          }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
               <polyline points="16 17 21 12 16 7" />
@@ -631,8 +685,22 @@ export default function DashboardTutor() {
         ))}
       </main>
 
-      {modalBitacora && <ModalAddBitacora estudiantes={estudiantes} onConfirm={handleBitacoraConfirm} onClose={() => setModalBitacora(false)} />}
-      {modalIncidencia && <ModalAddIncidencia bitacoras={bitacoras} onConfirm={handleIncidenciaConfirm} onClose={() => setModalIncidencia(false)} />}
+      {modalBitacora && (
+        <ModalAddBitacora
+          estudiantes={estudiantes}
+          semesterId={selectedSemesterId}
+          onConfirm={handleBitacoraConfirm}
+          onClose={() => setModalBitacora(false)}
+        />
+      )}
+      {modalIncidencia && (
+        <ModalAddIncidencia
+          bitacoras={bitacoras}
+          semesterId={selectedSemesterId}
+          onConfirm={handleIncidenciaConfirm}
+          onClose={() => setModalIncidencia(false)}
+        />
+      )}
       {modalSkill && <ModalEditSkill estudiante={modalSkill} onConfirm={handleSkillConfirm} onClose={() => setModalSkill(null)} />}
     </div>
   )

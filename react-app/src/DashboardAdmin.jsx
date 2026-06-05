@@ -15,6 +15,18 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip);
 
 const BAR_COLORS = ["#7c3131", "#0f6e56", "#b07c17", "#534AB7", "#3a3a3a"];
 
+const token = () => localStorage.getItem("token");
+
+async function apiFetch(path, options = {}) {
+  const res = await fetch(`/api${path}`, {
+    ...options,
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token()}`, ...options.headers },
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Error de servidor");
+  return data;
+}
+
 function skillColorClass(score) {
   if (score >= 90) return "skill-green";
   if (score >= 75) return "skill-amber";
@@ -54,37 +66,26 @@ function ModalAddStudent({ tutors, onConfirm, onClose }) {
       setLoading(true);
       setError("");
 
-    const token = localStorage.getItem("token");
     try {
-      const res = await fetch("http://localhost:3000/api/students", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          nombre: form.nombre,
-          apellido: form.apellido,
-          id_tutor: Number(form.id_tutor),
-          id_nivel: NIVEL_MAP[form.level],
-        }),
-      });
+    const data = await apiFetch("/students", {
+      method: "POST",
+      body: JSON.stringify({
+        nombre: form.nombre,
+        apellido: form.apellido,
+        id_tutor: Number(form.id_tutor),
+        id_nivel: NIVEL_MAP[form.level],
+      }),
+    });
 
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.message || "Error al crear estudiante.");
-        return;
-      }
-
-      onConfirm({
-        id: data.student.id,
-        name: `${data.student.nombre} ${data.student.apellido}`,
-        level: form.level,
+    onConfirm({
+      id: data.student.id,
+      name: `${data.student.nombre} ${data.student.apellido}`,
+      level: form.level,
         tutor: tutors.find(t => t.id === Number(form.id_tutor))?.name || "",
         skills: {},
       });
-    } catch {
-      setError("Error de conexión.");
+    } catch (e) {
+      setError(e.message || "Error de conexión.");
     } finally {
       setLoading(false);
     }
@@ -112,7 +113,7 @@ function ModalAddStudent({ tutors, onConfirm, onClose }) {
           <label>Tutor asignado</label>
           <select value={form.id_tutor} onChange={(e) => set("id_tutor", e.target.value)}>
             <option value="">Seleccionar tutor</option>
-            {tutors.map((t) => <option key={t.id} value={t.id_tutor}>{t.name}</option>)}
+             {tutors.map((t) => <option key={t.id_tutor} value={t.id_tutor}>{t.name}</option>)}
           </select>
         </div>
         {error && <p style={{ color: "red", fontSize: "13px" }}>{error}</p>}
@@ -128,7 +129,7 @@ function ModalAddStudent({ tutors, onConfirm, onClose }) {
 }
 
 // ─── Modal añadir tutor ───────────────────────────────────────────────────────
-function ModalAddTutor({ onConfirm, onClose }) {
+function ModalAddTutor({ activeSemester, onConfirm, onClose }) {
   const [form, setForm] = useState({ nombre: "", apellido: "", email: "", password: "", matricula: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -142,14 +143,9 @@ function ModalAddTutor({ onConfirm, onClose }) {
     setLoading(true);
     setError("");
 
-    const token = localStorage.getItem("token");
     try {
-      const res = await fetch("http://localhost:3000/api/users/tutores", {
+      const data = await apiFetch("/users/tutores", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
         body: JSON.stringify({
           nombre: form.nombre,
           apellido: form.apellido,
@@ -159,12 +155,6 @@ function ModalAddTutor({ onConfirm, onClose }) {
         }),
       });
 
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.message || "Error al crear tutor.");
-        return;
-      }
-
       onConfirm({
         id: data.user.id,
         id_tutor: data.user.id_tutor,
@@ -173,9 +163,10 @@ function ModalAddTutor({ onConfirm, onClose }) {
         matricula: data.user.matricula,
         hrs: 0,
         logs: [],
+        semesters: activeSemester ? [activeSemester] : [],
       });
-    } catch {
-      setError("Error de conexión.");
+    } catch (e) {
+      setError(e.message || "Error de conexión.");
     } finally {
       setLoading(false);
     }
@@ -216,6 +207,89 @@ function ModalAddTutor({ onConfirm, onClose }) {
   );
 }
 
+function ModalAddSemester({ onConfirm, onClose }) {
+  const [form, setForm] = useState({
+    codigo: "",
+    nombre: "",
+    fecha_inicio: "",
+    fecha_fin: "",
+    activo: false,
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const set = (key, val) => setForm((f) => ({ ...f, [key]: val }));
+
+  const handleConfirm = async () => {
+    if (!form.codigo || !form.nombre || !form.fecha_inicio || !form.fecha_fin) {
+      setError("Todos los campos son obligatorios.");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const data = await apiFetch("/semesters", {
+        method: "POST",
+        body: JSON.stringify({
+          codigo: form.codigo,
+          nombre: form.nombre,
+          fecha_inicio: form.fecha_inicio,
+          fecha_fin: form.fecha_fin,
+          activo: form.activo,
+        }),
+      });
+
+      onConfirm(data.semester);
+    } catch (e) {
+      setError(e.message || "Error de conexión.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Modal title="Crear semestre" onClose={onClose}>
+      <div className="modal-form">
+        <div className="form-field">
+          <label>Código</label>
+          <input type="text" placeholder="2026-3" value={form.codigo} onChange={(e) => set("codigo", e.target.value)} />
+        </div>
+        <div className="form-field">
+          <label>Nombre</label>
+          <input type="text" placeholder="Semestre 2026-3" value={form.nombre} onChange={(e) => set("nombre", e.target.value)} />
+        </div>
+        <div className="form-field">
+          <label>Fecha inicio</label>
+          <input type="date" value={form.fecha_inicio} onChange={(e) => set("fecha_inicio", e.target.value)} />
+        </div>
+        <div className="form-field">
+          <label>Fecha fin</label>
+          <input type="date" value={form.fecha_fin} onChange={(e) => set("fecha_fin", e.target.value)} />
+        </div>
+        <div className="form-field semester-active-field">
+          <label className="semester-active-label">
+            <input
+              type="checkbox"
+              checked={form.activo}
+              onChange={(e) => set("activo", e.target.checked)}
+            />
+            Marcar como semestre activo
+          </label>
+        </div>
+        {error && <p className="modal-error">{error}</p>}
+      </div>
+      <div className="modal-actions">
+        <button className="btn-modal-cancel" onClick={onClose} disabled={loading}>Cancelar</button>
+        <button className="btn-add-primary" onClick={handleConfirm} disabled={loading}>
+          {loading ? "Guardando..." : "Crear semestre"}
+        </button>
+      </div>
+    </Modal>
+  );
+}
+
 // ─── StudentCard ──────────────────────────────────────────────────────────────
 function StudentCard({ student }) {
   return (
@@ -227,6 +301,15 @@ function StudentCard({ student }) {
         </div>
         <span className="tutor-tag">Tutor: {student.tutor}</span>
       </div>
+      {student.semester && (
+        <div className="student-semester-row">
+          <span
+            className={`semester-pill ${student.semester.activo ? "semester-pill--active" : "semester-pill--inactive"}`}
+          >
+            {student.semester.codigo ?? student.semester.nombre}
+          </span>
+        </div>
+      )}
       <div className="skills-row">
         {Object.entries(student.skills).map(([skill, score]) => (
           <div key={skill} className={`skill-pill ${skillColorClass(score)}`}>
@@ -240,9 +323,10 @@ function StudentCard({ student }) {
 }
 
 // ─── TutorCard ────────────────────────────────────────────────────────────────
-function TutorCard({ tutor, onAddLog }) {
+function TutorCard({ tutor, availableSemesters, semesterId, onAddLog, onEnrollSemester }) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ fecha: "", horas: "", motivo: "" });
+  const [semesterToAdd, setSemesterToAdd] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -256,32 +340,36 @@ function TutorCard({ tutor, onAddLog }) {
     setLoading(true);
     setError("");
 
-    const token = localStorage.getItem("token");
     try {
-      const res = await fetch(`http://localhost:3000/api/tutors/${tutor.id_tutor}/horas-extras`, {
+      await apiFetch(`/tutors/${tutor.id_tutor}/horas-extras`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
         body: JSON.stringify({
+          id_semestre: Number(semesterId),
           fecha,
           horas: Number(horas),
           motivo,
         }),
       });
 
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.message || "Error al agregar horas.");
-        return;
-      }
-
       const fechaFormateada = new Date(fecha + 'T00:00:00').toLocaleDateString('es-MX');
       onAddLog(tutor.id, { fecha: fechaFormateada, horas: Number(horas), motivo });
       setForm({ fecha: "", horas: "", motivo: "" });
-    } catch {
-      setError("Error de conexión.");
+    } catch (e) {
+      setError(e.message || "Error de conexión.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEnroll = async () => {
+    if (!semesterToAdd) return;
+    setLoading(true);
+    setError("");
+    try {
+      await onEnrollSemester(tutor.id_tutor, semesterToAdd);
+      setSemesterToAdd("");
+    } catch (e) {
+      setError(e.message || "Error de conexión.");
     } finally {
       setLoading(false);
     }
@@ -304,6 +392,19 @@ function TutorCard({ tutor, onAddLog }) {
           </button>
         </div>
       </div>
+
+      {!!tutor.semesters?.length && (
+        <div className="tutor-semester-row">
+          {tutor.semesters.map((semester) => (
+            <span
+              key={semester.id_semestre}
+              className={`semester-pill ${semester.activo ? "semester-pill--active" : "semester-pill--inactive"}`}
+            >
+              {semester.codigo}
+            </span>
+          ))}
+        </div>
+      )}
 
       {open && (
         <div className="tutor-expand">
@@ -343,6 +444,26 @@ function TutorCard({ tutor, onAddLog }) {
             </button>
           </div>
 
+          <div className="add-hours-form" style={{ marginTop: 16 }}>
+            <p className="expand-label">Inscribir a otro semestre</p>
+            <div className="form-field semester-enroll-row">
+              <label>Semestre</label>
+              <select className="dashboard-select" value={semesterToAdd} onChange={(e) => setSemesterToAdd(e.target.value)}>
+                <option value="">Seleccionar semestre</option>
+                {availableSemesters
+                  .filter((semester) => !tutor.semesters?.some((item) => item.id_semestre === semester.id_semestre))
+                  .map((semester) => (
+                    <option key={semester.id_semestre} value={semester.id_semestre}>
+                      {semester.nombre}
+                    </option>
+                  ))}
+              </select>
+            </div>
+            <button className="btn-add-hours" onClick={handleEnroll} disabled={loading || !semesterToAdd}>
+              Inscribir tutor
+            </button>
+          </div>
+
           <div className="logs-list">
             {tutor.logs.map((log, i) => (
               <div key={i} className="log-entry">
@@ -369,29 +490,66 @@ export default function DashboardAdmin() {
   const [search, setSearch] = useState("");
   const [students, setStudents] = useState([]);
   const [tutors, setTutors] = useState([]);
+  const [semesters, setSemesters] = useState([]);
+  const [selectedSemesterId, setSelectedSemesterId] = useState("");
   const [loading, setLoading] = useState(true);
+  const [errorCarga, setErrorCarga] = useState("");
   const [modal, setModal] = useState(null);
 
   const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
   const adminName = storedUser?.nombre || "Administrador";
+  const activeSemester = semesters.find((semester) => String(semester.id_semestre) === String(selectedSemesterId))
+    || semesters.find((semester) => semester.activo)
+    || null;
+
+  const loadSemesterData = async (semesterId) => {
+    const [studentsData, tutorsData] = await Promise.all([
+      apiFetch(`/students?semester_id=${semesterId}`),
+      apiFetch(`/tutors?semester_id=${semesterId}`),
+    ]);
+
+    setStudents((studentsData.students ?? []).map((student) => ({
+      ...student,
+      semester: student.semester ?? null,
+    })));
+    setTutors((tutorsData.tutors ?? []).map((tutor) => ({ ...tutor, logs: tutor.logs || [], semesters: tutor.semesters || [] })));
+  };
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const headers = { Authorization: `Bearer ${token}` };
+    const load = async () => {
+      setLoading(true);
+      setErrorCarga("");
+      try {
+        const semestersData = await apiFetch("/semesters");
+        const semesterList = semestersData.semesters ?? [];
+        setSemesters(semesterList);
+        const storedSemesterId = localStorage.getItem("admin-semester-id");
+        const fallbackSemester = semesterList.find((semester) => semester.activo) || semesterList[0] || null;
+        const semesterId = storedSemesterId && semesterList.some((semester) => String(semester.id_semestre) === storedSemesterId)
+          ? storedSemesterId
+          : fallbackSemester ? String(fallbackSemester.id_semestre) : "";
 
-    Promise.all([
-      fetch("http://localhost:3000/api/students", { headers }).then(r => r.json()),
-      fetch("http://localhost:3000/api/tutors", { headers }).then(r => r.json()),
-    ]).then(([estudiantesData, tutoresData]) => {
-      setStudents(estudiantesData.students ?? []);
-      setTutors((tutoresData.tutors ?? []).map(t => ({ ...t, logs: t.logs || [] })));
-      setLoading(false);
-    }).catch(() => setLoading(false));
+        if (!semesterId) {
+          throw new Error("No hay semestres configurados.");
+        }
+
+        setSelectedSemesterId(semesterId);
+        await loadSemesterData(semesterId);
+        localStorage.setItem("admin-semester-id", semesterId);
+      } catch (error) {
+        setErrorCarga(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    load();
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    localStorage.removeItem("admin-semester-id");
     navigate("/");
   };
 
@@ -404,6 +562,40 @@ export default function DashboardAdmin() {
           : t
       )
     );
+  };
+
+  const handleSemesterChange = async (semesterId) => {
+    if (!semesterId || semesterId === selectedSemesterId) return;
+    setLoading(true);
+    setErrorCarga("");
+    try {
+      setSelectedSemesterId(String(semesterId));
+      await loadSemesterData(semesterId);
+      localStorage.setItem("admin-semester-id", String(semesterId));
+    } catch (error) {
+      setErrorCarga(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEnrollTutorSemester = async (tutorId, semesterId) => {
+    await apiFetch(`/tutors/${tutorId}/semesters`, {
+      method: "POST",
+      body: JSON.stringify({ id_semestre: Number(semesterId) }),
+    });
+
+    setTutors((prev) => prev.map((tutor) => (
+      tutor.id_tutor === tutorId
+        ? {
+            ...tutor,
+            semesters: [
+              ...(tutor.semesters || []),
+              semesters.find((semester) => String(semester.id_semestre) === String(semesterId)),
+            ].filter(Boolean),
+          }
+        : tutor
+    )));
   };
 
   const filteredStudents = students.filter((s) =>
@@ -445,16 +637,39 @@ export default function DashboardAdmin() {
   };
 
   const handleAddStudent = (studentData) => {
-    setStudents((prev) => [...prev, studentData]);
+    setStudents((prev) => [...prev, { ...studentData, semester: activeSemester }]);
     setModal(null);
   };
 
   const handleAddTutor = (tutorData) => {
-    setTutors((prev) => [...prev, tutorData]);
+    setTutors((prev) => [...prev, { ...tutorData, semesters: activeSemester ? [activeSemester] : [] }]);
+    setModal(null);
+  };
+
+  const handleAddSemester = async (semesterData) => {
+    setSemesters((prev) => {
+      const next = prev
+        .filter((semester) => String(semester.id_semestre) !== String(semesterData.id_semestre))
+        .map((semester) => (semesterData.activo ? { ...semester, activo: false } : semester));
+      return [semesterData, ...next];
+    });
+
+    if (semesterData.activo || !selectedSemesterId) {
+      await handleSemesterChange(String(semesterData.id_semestre));
+    }
+
     setModal(null);
   };
 
   if (loading) return <div className="admin-root" style={{ color: "#fff", padding: "2rem" }}>Cargando...</div>;
+  if (errorCarga) {
+    return (
+      <div className="admin-root" style={{ color: "#fff", padding: "2rem", display: "grid", gap: 12 }}>
+        <p style={{ color: "#f87171" }}>Error: {errorCarga}</p>
+        <button className="btn-add-primary" onClick={() => window.location.reload()}>Reintentar</button>
+      </div>
+    );
+  }
 
   return (
     <div className="admin-root">
@@ -469,7 +684,23 @@ export default function DashboardAdmin() {
           </div>
         </div>
         <div className="admin-header-right">
-          <span className="admin-welcome">Bienvenido, {adminName.split(" ")[0]}</span>
+          <button className="semester-create-btn" onClick={() => setModal("semestre")}>
+            Crear semestre
+          </button>
+          <div className="semester-switcher">
+            <span className="admin-welcome">Bienvenido, {adminName.split(" ")[0]}</span>
+            <select
+              className="dashboard-select dashboard-select--compact"
+              value={selectedSemesterId}
+              onChange={(e) => handleSemesterChange(e.target.value)}
+            >
+              {semesters.map((semester) => (
+                <option key={semester.id_semestre} value={semester.id_semestre}>
+                  {semester.nombre} {semester.activo ? "(activo)" : ""}
+                </option>
+              ))}
+            </select>
+          </div>
           <button className="admin-logout-btn" onClick={handleLogout} title="Cerrar sesión">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
@@ -513,8 +744,8 @@ export default function DashboardAdmin() {
         {tab === "estudiantes" && (
           <div className="cards-list">
             {filteredStudents.map((s) => (
-              <StudentCard key={s.id} student={s} />
-            ))}
+               <StudentCard key={s.id || s.id_estudiante} student={s} />
+             ))}
           </div>
         )}
 
@@ -524,8 +755,15 @@ export default function DashboardAdmin() {
               <Bar data={chartData} options={chartOptions} />
             </div>
             <div className="cards-list">
-              {filteredTutors.map((t) => (
-                <TutorCard key={t.id} tutor={t} onAddLog={handleAddLog} />
+               {filteredTutors.map((t) => (
+                 <TutorCard
+                   key={t.id || t.id_tutor}
+                   tutor={t}
+                  availableSemesters={semesters}
+                  semesterId={selectedSemesterId}
+                  onAddLog={handleAddLog}
+                  onEnrollSemester={handleEnrollTutorSemester}
+                />
               ))}
             </div>
           </>
@@ -541,7 +779,14 @@ export default function DashboardAdmin() {
       )}
       {modal === "tutor" && (
         <ModalAddTutor
+          activeSemester={activeSemester}
           onConfirm={handleAddTutor}
+          onClose={() => setModal(null)}
+        />
+      )}
+      {modal === "semestre" && (
+        <ModalAddSemester
+          onConfirm={handleAddSemester}
           onClose={() => setModal(null)}
         />
       )}

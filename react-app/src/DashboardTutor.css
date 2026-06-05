@@ -107,6 +107,13 @@
   gap: 16px;
 }
 
+.semester-switcher {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
 .nav-welcome {
   font-size: var(--font-lg);
   font-weight: 600;
@@ -239,6 +246,63 @@
   border-color: var(--color-aqua-light);
 }
 
+.dashboard-select {
+  width: 100%;
+  background: var(--color-surface-alt);
+  border: 1.5px solid #2e2e2e;
+  border-radius: 9px;
+  padding: 0 16px;
+  color: var(--color-text);
+  font-size: var(--font-base);
+  font-family: inherit;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--color-text-muted) 50%),
+    linear-gradient(135deg, var(--color-text-muted) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) 50%,
+    calc(100% - 12px) 50%;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+}
+
+.dashboard-select:hover {
+  border-color: var(--color-aqua-light);
+}
+
+.dashboard-select:focus {
+  border-color: var(--color-aqua-light);
+}
+
+.dashboard-select option[value=""] {
+  color: var(--color-text-muted);
+}
+
+.dashboard-select--compact {
+  min-width: 220px;
+  height: 40px;
+  padding-right: 34px;
+  font-size: var(--font-sm);
+}
+
+.semester-enroll-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.semester-enroll-row .dashboard-select {
+  min-width: 0;
+  height: 40px;
+  font-size: var(--font-sm);
+}
+
 .btn-añadir {
   height: 44px;
   padding: 0 22px;
@@ -256,6 +320,31 @@
 
 .btn-añadir:hover {
   filter: brightness(1.12);
+}
+
+.btn-add-hours {
+  height: 40px;
+  padding: 0 18px;
+  background: var(--color-btn-bg);
+  border: none;
+  border-radius: 9px;
+  color: var(--color-btn-text);
+  font-size: var(--font-sm);
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: filter 0.2s, opacity 0.2s;
+}
+
+.btn-add-hours:hover {
+  filter: brightness(1.12);
+}
+
+.btn-add-hours:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  filter: none;
 }
 
 .content-area {

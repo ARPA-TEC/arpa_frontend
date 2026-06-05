@@ -273,4 +273,64 @@ describe('Dashboard Administrador - ARPA', () => {
       });
     });
   });
+
+  describe('6. Crear semestre desde el panel', () => {
+    beforeEach(() => {
+      cy.loginAsAdmin();
+      cy.intercept('GET', 'http://localhost:3000/api/students').as('getStudents');
+      cy.intercept('GET', 'http://localhost:3000/api/tutors').as('getTutors');
+      cy.visit('/dashboard/admin');
+      cy.wait('@getStudents');
+      cy.wait('@getTutors');
+    });
+
+    it('abre el modal, envía el payload correcto y agrega el nuevo semestre al selector', () => {
+      const suffix = Date.now();
+      const codigo = `2026-${suffix.toString().slice(-4)}`;
+      const nombre = `Semestre ${codigo}`;
+      const fechaInicio = '2026-12-16';
+      const fechaFin = '2027-06-30';
+
+      cy.intercept('POST', 'http://localhost:3000/api/semesters', (req) => {
+        expect(req.body).to.deep.equal({
+          codigo,
+          nombre,
+          fecha_inicio: fechaInicio,
+          fecha_fin: fechaFin,
+          activo: false,
+        });
+
+        req.reply({
+          statusCode: 201,
+          body: {
+            message: 'Semestre creado correctamente.',
+            semester: {
+              id_semestre: 9999,
+              codigo,
+              nombre,
+              fecha_inicio: fechaInicio,
+              fecha_fin: fechaFin,
+              activo: false,
+            },
+          },
+        });
+      }).as('createSemester');
+
+      cy.get('.semester-create-btn').click();
+      cy.get('.modal-box').should('be.visible');
+
+      cy.get('.modal-box').within(() => {
+        cy.get('input[placeholder="2026-3"]').clear().type(codigo);
+        cy.get('input[placeholder="Semestre 2026-3"]').clear().type(nombre);
+        cy.get('input[type="date"]').first().type(fechaInicio);
+        cy.get('input[type="date"]').last().type(fechaFin);
+        cy.contains('Marcar como semestre activo').find('input').should('not.be.checked');
+        cy.contains('Crear semestre').click();
+      });
+
+      cy.wait('@createSemester').its('response.statusCode').should('eq', 201);
+      cy.get('.modal-box').should('not.exist');
+      cy.get('.dashboard-select').find('option').contains(codigo).should('exist');
+    });
+  });
 });
