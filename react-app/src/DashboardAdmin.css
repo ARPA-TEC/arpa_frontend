@@ -699,6 +699,34 @@
   white-space: nowrap;
 }
 
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.status-pill--approved {
+  background: rgba(173, 193, 120, 0.18);
+  color: #d8efaf;
+  border: 1px solid rgba(173, 193, 120, 0.35);
+}
+
+.status-pill--review {
+  background: rgba(224, 159, 62, 0.18);
+  color: #ffd08a;
+  border: 1px solid rgba(224, 159, 62, 0.35);
+}
+
+.status-pill--rejected {
+  background: rgba(158, 42, 43, 0.2);
+  color: #ffb5b5;
+  border: 1px solid rgba(158, 42, 43, 0.35);
+}
+
 /* ─── Modal ──────────────────────────────────────────────────────────────────*/
 .modal-overlay {
   position: fixed;

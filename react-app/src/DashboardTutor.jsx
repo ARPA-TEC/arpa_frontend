@@ -105,6 +105,32 @@ function ChevronIcon({ open }) {
   )
 }
 
+function ImageModal({ src, alt, onClose }) {
+  if (!src) return null
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div
+        className="modal-box"
+        onClick={(e) => e.stopPropagation()}
+        style={{ maxWidth: 'min(92vw, 980px)', width: 'auto', padding: 0, background: '#0f0f0f' }}
+      >
+        <div className="modal-header" style={{ padding: '1rem 1.2rem 0.75rem 1.2rem', marginBottom: 0 }}>
+          <h2 className="modal-title">Evidencia</h2>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div style={{ padding: '0 1.2rem 1.2rem' }}>
+          <img
+            src={src}
+            alt={alt}
+            style={{ width: '100%', maxHeight: '80vh', objectFit: 'contain', display: 'block', borderRadius: 10 }}
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function EstudianteCard({ estudiante, onEditar }) {
   return (
     <div className="card" data-testid="estudiante-card">
@@ -135,6 +161,13 @@ function EstudianteCard({ estudiante, onEditar }) {
 
 function BitacoraCard({ b }) {
   const [open, setOpen] = useState(false)
+  const [showImage, setShowImage] = useState(false)
+  const estado = b.estado ?? 'En revisión'
+  const statusClass = {
+    'Aprobado': 'status-pill--approved',
+    'No aprobado': 'status-pill--rejected',
+    'En revisión': 'status-pill--review',
+  }[estado]
 
   return (
     <div className="card" data-testid="bitacora-card" style={{ cursor: 'pointer' }} onClick={() => setOpen((v) => !v)}>
@@ -144,6 +177,7 @@ function BitacoraCard({ b }) {
           <div className="bitacora-meta">
             <span className="meta-chip">{b.fecha}</span>
             <span className="meta-chip">{b.duracion_horas} hr</span>
+            <span className={`status-pill ${statusClass}`}>{estado}</span>
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -165,13 +199,42 @@ function BitacoraCard({ b }) {
         <div style={{ marginTop: 10 }} onClick={(e) => e.stopPropagation()}>
           {b.evidencia_url
             ? (
-              <div style={{ marginTop: 14, borderRadius: 9, overflow: 'hidden', border: '1.5px solid #2a2a2a', background: '#111', textAlign: 'center' }}>
-                <img src={resolveEvidenceSrc(b.evidencia_url)} alt="Evidencia" style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block' }} />
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={() => setShowImage(true)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setShowImage(true) }}
+                style={{
+                marginTop: 14,
+                width: 180,
+                height: 110,
+                marginLeft: 'auto',
+                marginRight: 'auto',
+                borderRadius: 9,
+                overflow: 'hidden',
+                border: '1.5px solid #2a2a2a',
+                background: '#111',
+                textAlign: 'center',
+                cursor: 'zoom-in',
+              }}
+              >
+                <img
+                  src={resolveEvidenceSrc(b.evidencia_url)}
+                  alt="Evidencia"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                />
               </div>
             )
             : <p style={{ marginTop: 6, fontSize: 'var(--font-xs)', color: 'var(--color-text-muted)', fontStyle: 'italic' }}>Sin evidencia adjunta</p>
           }
         </div>
+      )}
+      {showImage && (
+        <ImageModal
+          src={resolveEvidenceSrc(b.evidencia_url)}
+          alt="Evidencia de bitácora"
+          onClose={() => setShowImage(false)}
+        />
       )}
     </div>
   )
@@ -179,6 +242,7 @@ function BitacoraCard({ b }) {
 
 function IncidenciaCard({ inc }) {
   const [open, setOpen] = useState(false)
+  const [showImage, setShowImage] = useState(false)
 
   return (
     <div className="card" style={{ cursor: 'pointer' }} onClick={() => setOpen((v) => !v)}>
@@ -208,13 +272,42 @@ function IncidenciaCard({ inc }) {
         <div style={{ marginTop: 10 }} onClick={(e) => e.stopPropagation()}>
           {inc.evidencia_url
             ? (
-              <div style={{ marginTop: 14, borderRadius: 9, overflow: 'hidden', border: '1.5px solid #2a2a2a', background: '#111', textAlign: 'center' }}>
-                <img src={resolveEvidenceSrc(inc.evidencia_url)} alt="Evidencia" style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block' }} />
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={() => setShowImage(true)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setShowImage(true) }}
+                style={{
+                marginTop: 14,
+                width: 180,
+                height: 110,
+                marginLeft: 'auto',
+                marginRight: 'auto',
+                borderRadius: 9,
+                overflow: 'hidden',
+                border: '1.5px solid #2a2a2a',
+                background: '#111',
+                textAlign: 'center',
+                cursor: 'zoom-in',
+              }}
+              >
+                <img
+                  src={resolveEvidenceSrc(inc.evidencia_url)}
+                  alt="Evidencia"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                />
               </div>
             )
             : <p style={{ marginTop: 6, fontSize: 'var(--font-xs)', color: 'var(--color-text-muted)', fontStyle: 'italic' }}>Sin evidencia adjunta</p>
           }
         </div>
+      )}
+      {showImage && (
+        <ImageModal
+          src={resolveEvidenceSrc(inc.evidencia_url)}
+          alt="Evidencia de incidencia"
+          onClose={() => setShowImage(false)}
+        />
       )}
     </div>
   )
@@ -486,6 +579,8 @@ export default function DashboardTutor() {
 
   useEffect(() => {
     const storedSemesterId = localStorage.getItem('tutor-semester-id') || ''
+    // Carga inicial del dashboard: sincroniza estado local con la API al montar.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadDashboard(storedSemesterId)
       .catch((e) => setErrorCarga(e.message))
       .finally(() => setCargando(false))
@@ -503,11 +598,11 @@ export default function DashboardTutor() {
       estudiante: est?.name ?? '—',
       fecha: new Date(bitacora.fecha_sesion).toLocaleDateString('es-MX'),
       duracion_horas: bitacora.duracion_horas,
+      estado: bitacora.estado ?? 'En revisión',
       notas: bitacora.notas,
       evidencia_url: bitacora.evidencia_url ?? null,
       id_semestre: bitacora.id_semestre ?? Number(selectedSemesterId),
     }, ...prev])
-    setTutor((prev) => prev ? { ...prev, horas_completadas: prev.horas_completadas + bitacora.duracion_horas } : prev)
     setModalBitacora(false)
   }
 

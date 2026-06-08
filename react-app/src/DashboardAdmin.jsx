@@ -14,6 +14,7 @@ import "./DashboardAdmin.css";
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip);
 
 const BAR_COLORS = ["#7c3131", "#0f6e56", "#b07c17", "#534AB7", "#3a3a3a"];
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
 const token = () => localStorage.getItem("token");
 
@@ -31,6 +32,44 @@ function skillColorClass(score) {
   if (score >= 90) return "skill-green";
   if (score >= 75) return "skill-amber";
   return "skill-red";
+}
+
+function statusClass(estado) {
+  if (estado === "Aprobado") return "status-pill--approved";
+  if (estado === "No aprobado") return "status-pill--rejected";
+  return "status-pill--review";
+}
+
+function resolveEvidenceSrc(url) {
+  if (!url) return null;
+  if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:")) return url;
+  return `${API_URL}${url.startsWith("/") ? "" : "/"}${url}`;
+}
+
+function ImageModal({ src, alt, onClose }) {
+  if (!src) return null;
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div
+        className="modal-box"
+        onClick={(e) => e.stopPropagation()}
+        style={{ maxWidth: "min(92vw, 980px)", width: "auto", padding: 0, background: "#0f0f0f" }}
+      >
+        <div className="modal-header" style={{ padding: "1rem 1.2rem 0.75rem 1.2rem", marginBottom: 0 }}>
+          <h2 className="modal-title">Evidencia</h2>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div style={{ padding: "0 1.2rem 1.2rem" }}>
+          <img
+            src={src}
+            alt={alt}
+            style={{ width: "100%", maxHeight: "80vh", objectFit: "contain", display: "block", borderRadius: 10 }}
+          />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // ─── Modal base ───────────────────────────────────────────────────────────────
@@ -130,7 +169,7 @@ function ModalAddStudent({ tutors, onConfirm, onClose }) {
 
 // ─── Modal añadir tutor ───────────────────────────────────────────────────────
 function ModalAddTutor({ activeSemester, onConfirm, onClose }) {
-  const [form, setForm] = useState({ nombre: "", apellido: "", email: "", password: "", matricula: "" });
+  const [form, setForm] = useState({ nombre: "", apellido: "", email: "", password: "", matricula: "", horas_servicio_social: "1" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const set = (key, val) => setForm((f) => ({ ...f, [key]: val }));
@@ -152,6 +191,7 @@ function ModalAddTutor({ activeSemester, onConfirm, onClose }) {
           email: form.email,
           password: form.password,
           matricula: form.matricula || null,
+          horas_servicio_social: Number(form.horas_servicio_social),
         }),
       });
 
@@ -161,6 +201,7 @@ function ModalAddTutor({ activeSemester, onConfirm, onClose }) {
         name: `${data.user.nombre} ${data.user.apellido}`,
         email: data.user.email,
         matricula: data.user.matricula,
+        horas_servicio_social: data.user.horas_servicio_social ?? Number(form.horas_servicio_social),
         hrs: 0,
         logs: [],
         semesters: activeSemester ? [activeSemester] : [],
@@ -194,6 +235,17 @@ function ModalAddTutor({ activeSemester, onConfirm, onClose }) {
         <div className="form-field">
           <label>Contraseña</label>
           <input type="password" placeholder="Contraseña" value={form.password} onChange={(e) => set("password", e.target.value)} />
+        </div>
+        <div className="form-field">
+          <label>Coeficiente de horas</label>
+          <input
+            type="number"
+            min="0.1"
+            step="0.1"
+            placeholder="1.0"
+            value={form.horas_servicio_social}
+            onChange={(e) => set("horas_servicio_social", e.target.value)}
+          />
         </div>
         {error && <p style={{ color: "red", fontSize: "13px" }}>{error}</p>}
       </div>
@@ -323,9 +375,10 @@ function StudentCard({ student }) {
 }
 
 // ─── TutorCard ────────────────────────────────────────────────────────────────
-function TutorCard({ tutor, availableSemesters, semesterId, onAddLog, onEnrollSemester }) {
+function TutorCard({ tutor, availableSemesters, semesterId, onAddLog, onEnrollSemester, onUpdateServiceHours }) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ fecha: "", horas: "", motivo: "" });
+  const [serviceHours, setServiceHours] = useState(String(tutor.horas_servicio_social ?? 1));
   const [semesterToAdd, setSemesterToAdd] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -375,12 +428,35 @@ function TutorCard({ tutor, availableSemesters, semesterId, onAddLog, onEnrollSe
     }
   };
 
+  const handleUpdateServiceHours = async () => {
+    const parsed = Number(serviceHours);
+    if (Number.isNaN(parsed) || parsed <= 0) {
+      setError("Las horas de servicio social deben ser un numero mayor a 0.");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    try {
+      await apiFetch(`/tutors/${tutor.id_tutor}/horas-servicio-social`, {
+        method: "PUT",
+        body: JSON.stringify({ horas_servicio_social: parsed }),
+      });
+      onUpdateServiceHours(tutor.id_tutor, parsed);
+    } catch (e) {
+      setError(e.message || "Error de conexión.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="card tutor-card">
       <div className="tutor-header" onClick={() => setOpen((o) => !o)}>
         <div className="tutor-header-left">
           <h2 className="tutor-name">{tutor.name}</h2>
           <span className="matricula-badge">{tutor.matricula}</span>
+          <span className="meta-chip">Coef. {tutor.horas_servicio_social ?? 1}</span>
         </div>
         <div className="tutor-header-right">
           <span className="hrs-badge">{tutor.hrs} hrs</span>
@@ -408,6 +484,23 @@ function TutorCard({ tutor, availableSemesters, semesterId, onAddLog, onEnrollSe
 
       {open && (
         <div className="tutor-expand">
+          <p className="expand-label">Actualizar coeficiente de horas de servicio social</p>
+          <div className="add-hours-form" style={{ marginBottom: 16 }}>
+            <div className="form-field">
+              <label>Horas de servicio social</label>
+              <input
+                type="number"
+                min="0.1"
+                step="0.1"
+                value={serviceHours}
+                onChange={(e) => setServiceHours(e.target.value)}
+              />
+            </div>
+            <button className="btn-add-hours" style={{ marginTop: 30 }} onClick={handleUpdateServiceHours} disabled={loading}>
+              {loading ? "Guardando..." : "Actualizar coeficiente"}
+            </button>
+          </div>
+
           <p className="expand-label">Añadir horas extras</p>
           <div className="add-hours-form">
             <div className="form-field">
@@ -439,7 +532,7 @@ function TutorCard({ tutor, availableSemesters, semesterId, onAddLog, onEnrollSe
               />
             </div>
             {error && <p style={{ color: "red", fontSize: "13px" }}>{error}</p>}
-            <button className="btn-add-hours" onClick={handleAdd} disabled={loading}>
+            <button className="btn-add-hours" style={{ marginTop: 30 }} onClick={handleAdd} disabled={loading}>
               {loading ? "Guardando..." : "Añadir horas"}
             </button>
           </div>
@@ -472,6 +565,7 @@ function TutorCard({ tutor, availableSemesters, semesterId, onAddLog, onEnrollSe
                   <p className="log-meta">
                     {log.date ?? log.fecha ?? ''}
                   </p>
+                  {log.estado && <span className={`status-pill ${statusClass(log.estado)}`}>{log.estado}</span>}
                 </div>
                 <span className="log-hrs-badge">{log.duration ?? log.horas}hr</span>
               </div>
@@ -490,11 +584,13 @@ export default function DashboardAdmin() {
   const [search, setSearch] = useState("");
   const [students, setStudents] = useState([]);
   const [tutors, setTutors] = useState([]);
+  const [pendingBitacoras, setPendingBitacoras] = useState([]);
   const [semesters, setSemesters] = useState([]);
   const [selectedSemesterId, setSelectedSemesterId] = useState("");
   const [loading, setLoading] = useState(true);
   const [errorCarga, setErrorCarga] = useState("");
   const [modal, setModal] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
 
   const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
   const adminName = storedUser?.nombre || "Administrador";
@@ -513,6 +609,8 @@ export default function DashboardAdmin() {
       semester: student.semester ?? null,
     })));
     setTutors((tutorsData.tutors ?? []).map((tutor) => ({ ...tutor, logs: tutor.logs || [], semesters: tutor.semesters || [] })));
+    const pendingData = await apiFetch(`/bitacoras/pending?semester_id=${semesterId}`);
+    setPendingBitacoras(pendingData.bitacoras ?? []);
   };
 
   useEffect(() => {
@@ -562,6 +660,32 @@ export default function DashboardAdmin() {
           : t
       )
     );
+  };
+
+  const handleUpdateServiceHours = (tutorId, serviceHours) => {
+    setTutors((prev) => prev.map((tutor) => (
+      tutor.id_tutor === tutorId
+        ? { ...tutor, horas_servicio_social: serviceHours }
+        : tutor
+    )));
+  };
+
+  const handleBitacoraUpdate = async (bitacoraId, estado) => {
+    await apiFetch(`/bitacoras/${bitacoraId}/estado`, {
+      method: "PUT",
+      body: JSON.stringify({ estado }),
+    });
+    setPendingBitacoras((prev) => prev.filter((b) => b.id !== bitacoraId));
+    setTutors((prev) => prev.map((tutor) => {
+      const updated = pendingBitacoras.find((b) => b.id === bitacoraId);
+      if (!updated || tutor.id_tutor !== updated.id_tutor) return tutor;
+      const delta = estado === "Aprobado" ? updated.duracion_horas : 0;
+      return {
+        ...tutor,
+        hrs: Math.round((tutor.hrs + delta) * 10) / 10,
+        logs: tutor.logs,
+      };
+    }));
   };
 
   const handleSemesterChange = async (semesterId) => {
@@ -725,6 +849,12 @@ export default function DashboardAdmin() {
         >
           Tutores
         </button>
+        <button
+          className={`admin-nav-btn ${tab === "bitacoras" ? "active" : ""}`}
+          onClick={() => changeTab("bitacoras")}
+        >
+          Bitácoras pendientes
+        </button>
       </nav>
 
       {/* ── Main content ── */}
@@ -732,13 +862,21 @@ export default function DashboardAdmin() {
         <div className="admin-toolbar">
           <input
             className="admin-search"
-            placeholder={tab === "estudiantes" ? "Filtrar estudiantes" : "Filtrar tutores"}
+            placeholder={
+              tab === "estudiantes"
+                ? "Filtrar estudiantes"
+                : tab === "tutores"
+                  ? "Filtrar tutores"
+                  : "Filtrar bitácoras"
+            }
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-          <button className="btn-add-primary" onClick={() => setModal(tab === "estudiantes" ? "estudiante" : "tutor")}>
-            {tab === "estudiantes" ? "Añadir estudiante" : "Añadir tutor"}
-          </button>
+          {tab !== "bitacoras" ? (
+            <button className="btn-add-primary" onClick={() => setModal(tab === "estudiantes" ? "estudiante" : "tutor")}>
+              {tab === "estudiantes" ? "Añadir estudiante" : "Añadir tutor"}
+            </button>
+          ) : null}
         </div>
 
         {tab === "estudiantes" && (
@@ -763,10 +901,71 @@ export default function DashboardAdmin() {
                   semesterId={selectedSemesterId}
                   onAddLog={handleAddLog}
                   onEnrollSemester={handleEnrollTutorSemester}
+                  onUpdateServiceHours={handleUpdateServiceHours}
                 />
               ))}
             </div>
           </>
+        )}
+
+        {tab === "bitacoras" && (
+          <div className="cards-list">
+            {pendingBitacoras
+              .filter((b) =>
+                `${b.estudiante} ${b.tutor} ${b.semestre} ${b.notas ?? ""}`.toLowerCase().includes(search.toLowerCase())
+              )
+              .map((b) => (
+                <div key={b.id} className="card">
+                  <div className="card-top-row">
+                    <div className="card-name-group">
+                      <h2 className="card-student-name">{b.estudiante}</h2>
+                      <span className={`status-pill ${statusClass(b.estado)}`}>{b.estado}</span>
+                    </div>
+                    <span className="tutor-tag">{b.tutor}</span>
+                  </div>
+                  <div className="bitacora-meta" style={{ marginTop: 10 }}>
+                    <span className="meta-chip">{b.fecha}</span>
+                    <span className="meta-chip">{b.semestre}</span>
+                    <span className="meta-chip">{b.duracion_horas} hr</span>
+                  </div>
+                  <p className="bitacora-notas" style={{ marginTop: 10 }}>{b.notas}</p>
+                  {b.evidencia_url ? (
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => setPreviewImage(resolveEvidenceSrc(b.evidencia_url))}
+                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setPreviewImage(resolveEvidenceSrc(b.evidencia_url)); }}
+                      style={{
+                        marginTop: 14,
+                        width: 180,
+                        height: 110,
+                        marginLeft: "auto",
+                        marginRight: "auto",
+                        borderRadius: 10,
+                        overflow: "hidden",
+                        border: "1.5px solid #2a2a2a",
+                        background: "#111",
+                        cursor: "zoom-in",
+                      }}
+                    >
+                      <img
+                        src={resolveEvidenceSrc(b.evidencia_url)}
+                        alt="Evidencia de bitácora"
+                        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                      />
+                    </div>
+                  ) : (
+                    <p style={{ marginTop: 10, fontSize: "var(--font-xs)", color: "var(--color-text-muted)", fontStyle: "italic" }}>
+                      Sin evidencia adjunta
+                    </p>
+                  )}
+                  <div className="modal-actions" style={{ justifyContent: "flex-start", marginTop: 12 }}>
+                    <button className="btn-add-primary" onClick={() => handleBitacoraUpdate(b.id, "Aprobado")}>Aprobar</button>
+                    <button className="btn-modal-cancel" onClick={() => handleBitacoraUpdate(b.id, "No aprobado")}>No aprobar</button>
+                  </div>
+                </div>
+              ))}
+          </div>
         )}
       </main>
 
@@ -788,6 +987,13 @@ export default function DashboardAdmin() {
         <ModalAddSemester
           onConfirm={handleAddSemester}
           onClose={() => setModal(null)}
+        />
+      )}
+      {previewImage && (
+        <ImageModal
+          src={previewImage}
+          alt="Evidencia de bitácora"
+          onClose={() => setPreviewImage(null)}
         />
       )}
     </div>
