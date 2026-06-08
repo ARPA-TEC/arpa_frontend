@@ -92,6 +92,7 @@ function ModalAddStudent({ tutors, onConfirm, onClose }) {
   const [form, setForm] = useState({ nombre: "", apellido: "", level: "", id_tutor: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [createdStudentLoginId, setCreatedStudentLoginId] = useState("");
   const set = (key, val) => setForm((f) => ({ ...f, [key]: val }));
 
   const NIVEL_MAP = { A1: 1, A2: 2, B1: 3, B2: 4, C1: 5, C2: 6 };
@@ -123,6 +124,7 @@ function ModalAddStudent({ tutors, onConfirm, onClose }) {
         tutor: tutors.find(t => t.id === Number(form.id_tutor))?.name || "",
         skills: {},
       });
+      setCreatedStudentLoginId(data.student.student_login_id || "");
     } catch (e) {
       setError(e.message || "Error de conexión.");
     } finally {
@@ -132,37 +134,54 @@ function ModalAddStudent({ tutors, onConfirm, onClose }) {
 
   return (
     <Modal title="Añadir estudiante" onClose={onClose}>
-      <div className="modal-form">
-        <div className="form-field">
-          <label>Nombre</label>
-          <input type="text" placeholder="Nombre" value={form.nombre} onChange={(e) => set("nombre", e.target.value)} />
+      {createdStudentLoginId ? (
+        <div className="modal-form">
+          <div className="form-field">
+            <label>Estudiante creado</label>
+            <div className="credential-box">
+              <strong>ID de acceso:</strong> {createdStudentLoginId}
+            </div>
+          </div>
+          <p className="modal-success">Guarda este ID para iniciar sesión sin contraseña.</p>
+          <div className="modal-actions">
+            <button className="btn-add-primary" onClick={onClose}>Entendido</button>
+          </div>
         </div>
-        <div className="form-field">
-          <label>Apellido</label>
-          <input type="text" placeholder="Apellido" value={form.apellido} onChange={(e) => set("apellido", e.target.value)} />
-        </div>
-        <div className="form-field">
-          <label>Nivel MCER</label>
-          <select value={form.level} onChange={(e) => set("level", e.target.value)}>
-            <option value="">Seleccionar nivel</option>
-            {["A1","A2","B1","B2","C1","C2"].map((l) => <option key={l} value={l}>{l}</option>)}
-          </select>
-        </div>
-        <div className="form-field">
-          <label>Tutor asignado</label>
-          <select value={form.id_tutor} onChange={(e) => set("id_tutor", e.target.value)}>
-            <option value="">Seleccionar tutor</option>
-             {tutors.map((t) => <option key={t.id_tutor} value={t.id_tutor}>{t.name}</option>)}
-          </select>
-        </div>
-        {error && <p style={{ color: "red", fontSize: "13px" }}>{error}</p>}
-      </div>
-      <div className="modal-actions">
-        <button className="btn-modal-cancel" onClick={onClose}>Cancelar</button>
-        <button className="btn-add-primary" onClick={handleConfirm} disabled={loading}>
-          {loading ? "Guardando..." : "Añadir estudiante"}
-        </button>
-      </div>
+      ) : (
+        <>
+          <div className="modal-form">
+            <div className="form-field">
+              <label>Nombre</label>
+              <input type="text" placeholder="Nombre" value={form.nombre} onChange={(e) => set("nombre", e.target.value)} />
+            </div>
+            <div className="form-field">
+              <label>Apellido</label>
+              <input type="text" placeholder="Apellido" value={form.apellido} onChange={(e) => set("apellido", e.target.value)} />
+            </div>
+            <div className="form-field">
+              <label>Nivel MCER</label>
+              <select value={form.level} onChange={(e) => set("level", e.target.value)}>
+                <option value="">Seleccionar nivel</option>
+                {["A1","A2","B1","B2","C1","C2"].map((l) => <option key={l} value={l}>{l}</option>)}
+              </select>
+            </div>
+            <div className="form-field">
+              <label>Tutor asignado</label>
+              <select value={form.id_tutor} onChange={(e) => set("id_tutor", e.target.value)}>
+                <option value="">Seleccionar tutor</option>
+                 {tutors.map((t) => <option key={t.id_tutor} value={t.id_tutor}>{t.name}</option>)}
+              </select>
+            </div>
+            {error && <p style={{ color: "red", fontSize: "13px" }}>{error}</p>}
+          </div>
+          <div className="modal-actions">
+            <button className="btn-modal-cancel" onClick={onClose}>Cancelar</button>
+            <button className="btn-add-primary" onClick={handleConfirm} disabled={loading}>
+              {loading ? "Guardando..." : "Añadir estudiante"}
+            </button>
+          </div>
+        </>
+      )}
     </Modal>
   );
 }
@@ -172,6 +191,7 @@ function ModalAddTutor({ activeSemester, onConfirm, onClose }) {
   const [form, setForm] = useState({ nombre: "", apellido: "", email: "", password: "", matricula: "", horas_servicio_social: "1" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [createdCredentials, setCreatedCredentials] = useState(null);
   const set = (key, val) => setForm((f) => ({ ...f, [key]: val }));
 
   const handleConfirm = async () => {
@@ -183,7 +203,7 @@ function ModalAddTutor({ activeSemester, onConfirm, onClose }) {
     setError("");
 
     try {
-      const data = await apiFetch("/users/tutores", {
+    const data = await apiFetch("/users/tutores", {
         method: "POST",
         body: JSON.stringify({
           nombre: form.nombre,
@@ -206,6 +226,10 @@ function ModalAddTutor({ activeSemester, onConfirm, onClose }) {
         logs: [],
         semesters: activeSemester ? [activeSemester] : [],
       });
+      setCreatedCredentials({
+        email: data.user.email,
+        password: form.password,
+      });
     } catch (e) {
       setError(e.message || "Error de conexión.");
     } finally {
@@ -215,46 +239,64 @@ function ModalAddTutor({ activeSemester, onConfirm, onClose }) {
 
   return (
     <Modal title="Añadir tutor" onClose={onClose}>
-      <div className="modal-form">
-        <div className="form-field">
-          <label>Nombre</label>
-          <input type="text" placeholder="Nombre" value={form.nombre} onChange={(e) => set("nombre", e.target.value)} />
+      {createdCredentials ? (
+        <div className="modal-form">
+          <div className="form-field">
+            <label>Tutor creado</label>
+            <div className="credential-box">
+              <div><strong>Correo:</strong> {createdCredentials.email}</div>
+              <div><strong>Contraseña:</strong> {createdCredentials.password}</div>
+            </div>
+          </div>
+          <p className="modal-success">Comparte estas credenciales con el tutor para que pueda iniciar sesión.</p>
+          <div className="modal-actions">
+            <button className="btn-add-primary" onClick={onClose}>Entendido</button>
+          </div>
         </div>
-        <div className="form-field">
-          <label>Apellido</label>
-          <input type="text" placeholder="Apellido" value={form.apellido} onChange={(e) => set("apellido", e.target.value)} />
-        </div>
-        <div className="form-field">
-          <label>Matrícula</label>
-          <input type="text" placeholder="A01738027" value={form.matricula} onChange={(e) => set("matricula", e.target.value)} />
-        </div>
-        <div className="form-field">
-          <label>Correo electrónico</label>
-          <input type="email" placeholder="nombre@correo.com" value={form.email} onChange={(e) => set("email", e.target.value)} />
-        </div>
-        <div className="form-field">
-          <label>Contraseña</label>
-          <input type="password" placeholder="Contraseña" value={form.password} onChange={(e) => set("password", e.target.value)} />
-        </div>
-        <div className="form-field">
-          <label>Coeficiente de horas</label>
-          <input
-            type="number"
-            min="0.1"
-            step="0.1"
-            placeholder="1.0"
-            value={form.horas_servicio_social}
-            onChange={(e) => set("horas_servicio_social", e.target.value)}
-          />
-        </div>
-        {error && <p style={{ color: "red", fontSize: "13px" }}>{error}</p>}
-      </div>
-      <div className="modal-actions">
-        <button className="btn-modal-cancel" onClick={onClose}>Cancelar</button>
-        <button className="btn-add-primary" onClick={handleConfirm} disabled={loading}>
-          {loading ? "Guardando..." : "Añadir tutor"}
-        </button>
-      </div>
+      ) : (
+        <>
+          <div className="modal-form">
+            <div className="form-field">
+              <label>Nombre</label>
+              <input type="text" placeholder="Nombre" value={form.nombre} onChange={(e) => set("nombre", e.target.value)} />
+            </div>
+            <div className="form-field">
+              <label>Apellido</label>
+              <input type="text" placeholder="Apellido" value={form.apellido} onChange={(e) => set("apellido", e.target.value)} />
+            </div>
+            <div className="form-field">
+              <label>Matrícula</label>
+              <input type="text" placeholder="A01738027" value={form.matricula} onChange={(e) => set("matricula", e.target.value)} />
+            </div>
+            <div className="form-field">
+              <label>Correo electrónico</label>
+              <input type="email" placeholder="nombre@correo.com" value={form.email} onChange={(e) => set("email", e.target.value)} />
+            </div>
+            <div className="form-field">
+              <label>Contraseña</label>
+              <input type="password" placeholder="Contraseña" value={form.password} onChange={(e) => set("password", e.target.value)} />
+            </div>
+            <div className="form-field">
+              <label>Coeficiente de horas</label>
+              <input
+                type="number"
+                min="0.1"
+                step="0.1"
+                placeholder="1.0"
+                value={form.horas_servicio_social}
+                onChange={(e) => set("horas_servicio_social", e.target.value)}
+              />
+            </div>
+            {error && <p style={{ color: "red", fontSize: "13px" }}>{error}</p>}
+          </div>
+          <div className="modal-actions">
+            <button className="btn-modal-cancel" onClick={onClose}>Cancelar</button>
+            <button className="btn-add-primary" onClick={handleConfirm} disabled={loading}>
+              {loading ? "Guardando..." : "Añadir tutor"}
+            </button>
+          </div>
+        </>
+      )}
     </Modal>
   );
 }
@@ -762,12 +804,10 @@ export default function DashboardAdmin() {
 
   const handleAddStudent = (studentData) => {
     setStudents((prev) => [...prev, { ...studentData, semester: activeSemester }]);
-    setModal(null);
   };
 
   const handleAddTutor = (tutorData) => {
     setTutors((prev) => [...prev, { ...tutorData, semesters: activeSemester ? [activeSemester] : [] }]);
-    setModal(null);
   };
 
   const handleAddSemester = async (semesterData) => {
